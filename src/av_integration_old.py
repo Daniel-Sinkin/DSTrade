@@ -70,6 +70,23 @@ class AlphaVantageAPIHandler:
     def __repr__(self) -> str:
         return f"AlphaVantageAPIHandler(api_key={obfuscate_api_key(self.api_key)})"
 
+    def get_time_series_daily_request(
+        self,
+        symbol: AV_SYMBOL | str,
+        outputsize: Literal["full", "compact"] = "compact",
+        datatype: Literal["json", "csv"] = "json",
+        **kwargs,
+    ) -> Optional[dict]:
+        function = "TIME_SERIES_DAILY"
+
+        return self.send_request(
+            function=function,
+            request_args=[f"symbol={symbol}"]
+            + ([f"outputsize={outputsize}"] if outputsize != "compact" else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
+            **kwargs,
+        )
+
     def get_time_series_daily(
         self,
         symbol: AV_SYMBOL | str,
@@ -77,19 +94,9 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[pd.DataFrame]:
-        function = "TIME_SERIES_DAILY"
-        data_key = "Time Series (Daily)"
-
-        data = self.send_request(
-            function=function,
-            request_args=[f"symbol={symbol}"]
-            + ([f"outputsize={outputsize}"] if outputsize != "compact" else [])
-            + ([f"datatype={datatype}"] if datatype != "json" else []),
-            data_key=data_key,
-            **kwargs,
+        data = self.get_time_series_daily_request(
+            symbol=symbol, outputsize=outputsize, datatype=datatype, **kwargs
         )
-        if data is None:
-            return None
         df = pd.DataFrame.from_dict(data, orient="index")
         df.index = pd.to_datetime(df.index, format="%Y-%m-%d")
 
@@ -114,6 +121,33 @@ class AlphaVantageAPIHandler:
         )
         self.logger.debug("Pulled %d daily candles for %s", len(df), symbol)
         return df
+
+    def get_time_series_intraday_request(
+        self,
+        symbol: AV_SYMBOL,
+        interval: AV_CANDLE_TF,
+        adjusted: bool = True,
+        extended_hours: bool = True,
+        month: Optional[str] = None,
+        outputsize: Literal["compact", "full"] = "compact",
+        datatype: Literal["json", "csv"] = "json",
+        **kwargs,
+    ) -> pd.DataFrame:
+        function = "TIME_SERIES_INTRADAY"
+
+        return self.send_request(
+            function=function,
+            request_args=[
+                f"symbol={symbol}",
+                f"interval={interval}",
+                f"adjusted={adjusted}",
+                f"extended_hours={extended_hours}",
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"outputsize={outputsize}"] if outputsize != "compact" else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
+            **kwargs,
+        )
 
     def get_time_series_intraday(
         self,
@@ -126,25 +160,16 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> pd.DataFrame:
-        function = "TIME_SERIES_INTRADAY"
-        data_key = (f"Time Series ({interval})",)
-
-        data = self.send_request(
-            function=function,
-            request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
-                f"adjusted={adjusted}",
-                f"extended_hours={extended_hours}",
-            ]
-            + ([f"month={month}"] if month is not None else [])
-            + ([f"outputsize={outputsize}"] if outputsize != "compact" else [])
-            + ([f"datatype={datatype}"] if datatype != "json" else []),
-            data_key=data_key,
+        data = self.get_time_series_intraday_request(
+            symbol=symbol,
+            interval=interval,
+            adjusted=adjusted,
+            extended_hours=extended_hours,
+            month=month,
+            outputsize=outputsize,
+            datatype=datatype,
             **kwargs,
         )
-        if data is None:
-            return None
         df = pd.DataFrame.from_dict(data, orient="index")
         df.index = pd.to_datetime(df.index, format="%Y-%m-%d")
 
@@ -170,29 +195,34 @@ class AlphaVantageAPIHandler:
         self.logger.debug("Pulled %d daily candles for %s", len(df), symbol)
         return df
 
-    def get_currency_exchange_pair(
+    def get_currency_exchange_pair_request(
         self,
         from_currency: AV_CURRENCY | AV_CURRENCY_DIGITAL | str,
         to_currency: AV_CURRENCY | AV_CURRENCY_DIGITAL | str,
         **kwargs,
     ) -> tuple[float, float]:
         function = "CURRENCY_EXCHANGE_RATE"
-        data_key = "Realtime Currency Exchange Rate"
         from_currency = str(from_currency)
         to_currency = str(to_currency)
 
-        data = self.send_request(
+        return self.send_request(
             function=function,
             request_args=[
                 f"from_currency={from_currency}",
                 f"to_currency={to_currency}",
             ],
-            data_key=data_key,
             **kwargs,
         )
-        if data is None:
-            return None
 
+    def get_currency_exchange_pair(
+        self,
+        from_currency: AV_CURRENCY | AV_CURRENCY_DIGITAL | str,
+        to_currency: AV_CURRENCY | AV_CURRENCY_DIGITAL | str,
+        **kwargs,
+    ) -> tuple[float, float]:
+        data = self.get_currency_exchange_pair_request(
+            from_currency=from_currency, to_currency=to_currency, **kwargs
+        )
         bid = float(data["8. Bid Price"])
         ask = float(data["9. Ask Price"])
         return bid, ask
@@ -243,6 +273,29 @@ class AlphaVantageAPIHandler:
         df = df[OPTIONS_COLUMNS]
         return df
 
+    def get_sentiment_request(
+        self,
+        tickers: Optional[list[AV_SYMBOL]] = None,
+        topics: Optional[list[AV_SENTIMENT]] = None,
+        time_from: Optional[str] = None,
+        time_to: Optional[str] = None,
+        sort: Literal["LATEST", "EARLIEST", "RELEVANCE"] = "LATEST",
+        limit: int = 50,
+        **kwargs,
+    ) -> Optional[list[dict]]:
+        function = "NEWS_SENTIMENT"
+        return self.send_request(
+            function=function,
+            request_args=[]
+            + ([f"tickers={','.join(tickers)}"] if tickers is not None else [])
+            + ([f"topics={','.join(topics)}"] if topics is not None else [])
+            + ([f"time_from={time_from}"] if time_from is not None else [])
+            + ([f"time_to={time_to}"] if time_to is not None else [])
+            + ([f"sort={sort}"] if sort != "LATEST" else [])
+            + ([f"limit={limit}"] if limit != 50 else []),
+            **kwargs,
+        )
+
     def get_sentiment(
         self,
         tickers: Optional[list[AV_SYMBOL]] = None,
@@ -253,34 +306,21 @@ class AlphaVantageAPIHandler:
         limit: int = 50,
         **kwargs,
     ) -> Optional[list[AV_SENTIMENT_ARTICLE]]:
-        function = "NEWS_SENTIMENT"
-        data_key = "feed"
-        if tickers is not None:
-            assert len(tickers) > 0
-        data = self.send_request(
-            function=function,
-            request_args=[]
-            + ([f"tickers={','.join(tickers)}"] if tickers is not None else [])
-            + ([f"topics={','.join(topics)}"] if topics is not None else [])
-            + ([f"time_from={time_from}"] if time_from is not None else [])
-            + ([f"time_to={time_to}"] if time_to is not None else [])
-            + ([f"sort={sort}"] if sort != "LATEST" else [])
-            + ([f"limit={limit}"] if limit != 50 else []),
-            data_key=data_key,
-            **kwargs,
+        return self.get_sentiment_request(
+            tickers=tickers,
+            topics=topics,
+            time_from=time_from,
+            time_to=time_to,
+            sort=sort,
+            limit=limit,
         )
-        if data is None:
-            return None
-
-        return data
 
     def send_request(
         self,
         function: str,
         request_args: list[str],
-        data_key: Optional[str] = None,
         save_result: bool = True,
-    ) -> Optional[dict[str, any]]:
+    ) -> Optional[dict[str, any] | list[dict[str, any]]]:
         """
         The key where the data is, is rather inconsitent in the API, if data_key
         is not set then we first check if there is only one key, then that one has to be
@@ -324,15 +364,9 @@ class AlphaVantageAPIHandler:
                 f"Got the following error response: {response_data['Error Message']}."
             )
             return None
-        if data_key is None:
-            if "Meta Data" in response_data:
-                self.logger.debug("Meta Data: %s", response_data["Meta Data"])
-                data_key = [x for x in response_data if x != "Meta Data"]
-            else:
-                data_key = list(response_data)[0]
 
         self.logger.debug(
             f"Successfuly sent request '{obfuscate_request_url(request_url, self.api_key)}'"
         )
 
-        return response_data[data_key]
+        return response_data
