@@ -103,14 +103,14 @@ def main() -> None:
                 req_args_optional += "\n"
 
         args_required = f"""
-    def get_{k.lower()}(
+    def _get_{k.lower()}(
         self,
     {args_required}
     {args_optional}
         datatype: Literal["json", "csv"] = "json",
         **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function=\"{k}\",
             request_args=[
 {req_args_required}
@@ -124,20 +124,20 @@ def main() -> None:
 
     av_integration_py += "\n"
     av_integration_py += (
-        "    def get_analytics_fixed_window(self, *args, **kwargs) -> None:\n"
+        "    def _get_analytics_fixed_window(self, *args, **kwargs) -> None:\n"
     )
     av_integration_py += "        raise NotImplementedError('The multiple RANGE argument is currently not supported!')\n"
     av_integration_py += "\n"
 
     # Either no arguments at all (not automatically supported), or function not given in documentation
     av_integration_py += """
-    def get_global_quote(
+    def _get_global_quote(
         self,
         symbol,
         datatype: Literal[\"json\", \"csv\"] = \"json\",
         **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="GLOBAL_QUOTE",
             request_args=[
                 f"symbol={symbol}",
@@ -145,54 +145,54 @@ def main() -> None:
             + ([f"datatype={datatype}"] if datatype != "json" else []),
         )
     
-    def get_market_status(
+    def _get_market_status(
         self,
         **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="MARKET_STATUS",
             **kwargs
         ) 
     
-    def get_top_gainers_losers(
+    def _get_top_gainers_losers(
         self,
         **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="TOP_GAINERS_LOSERS",
             **kwargs
         ) 
 
-    def get_real_gdp_per_capita(
+    def _get_real_gdp_per_capita(
         self,
         datatype: Literal[\"json\", \"csv\"] = \"json\",
         **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="REAL_GDP_PER_CAPITA",
             request_args = []
             + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs
         ) 
     
-    def get_inflation(
+    def _get_inflation(
         self,
         datatype: Literal[\"json\", \"csv\"] = \"json\",
         **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="INFLATION",
             request_args = []
             + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs
         ) 
     
-    def get_retail_sales(
+    def _get_retail_sales(
         self,
         datatype: Literal[\"json\", \"csv\"] = \"json\",
         **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="RETAIL_SALES",
             request_args = []
             + ([f"datatype={datatype}"] if datatype != "json" else []),
@@ -200,12 +200,12 @@ def main() -> None:
         ) 
     
             
-    def get_durables(
+    def _get_durables(
         self,
         datatype: Literal[\"json\", \"csv\"] = \"json\",
         **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="DURABLES",
             request_args = []
             + ([f"datatype={datatype}"] if datatype != "json" else []),
@@ -213,12 +213,12 @@ def main() -> None:
         ) 
     
                     
-    def get_unemployment(
+    def _get_unemployment(
         self,
         datatype: Literal[\"json\", \"csv\"] = \"json\",
         **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="UNEMPLOYMENT",
             request_args = []
             + ([f"datatype={datatype}"] if datatype != "json" else []),
@@ -226,12 +226,12 @@ def main() -> None:
         ) 
     
                             
-    def get_nonfarm_payroll(
+    def _get_nonfarm_payroll(
         self,
         datatype: Literal[\"json\", \"csv\"] = \"json\",
         **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="NONFARM_PAYROLL",
             request_args = []
             + ([f"datatype={datatype}"] if datatype != "json" else []),

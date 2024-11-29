@@ -1,19 +1,20 @@
-import pandas as pd
+import os
 
-from src.av_constants import (
-    AV_CANDLE_TF,
-    AV_CURRENCY,
-    AV_CURRENCY_DIGITAL,
-    AV_SYMBOL,
-)
-from src.av_integration_old import AlphaVantageAPIHandler
+import pandas as pd
+from dotenv import load_dotenv
+
+from src.av_integration import AlphaVantageAPIHandler
+
+load_dotenv()
+av_api_key = os.getenv("API_KEY_ALPHAVANTAGE")
+if av_api_key is None:
+    raise RuntimeError("AV API key couldn't be found in the environment variables.")
 
 
 def main() -> None:
-    handler = AlphaVantageAPIHandler(api_key="demo")
-    retval = handler.get_sentiment(tickers=[AV_SYMBOL.AAPL])
+    handler = AlphaVantageAPIHandler(av_api_key)
 
-    print(retval)
+    handler.get_time_series_daily
 
 
 if __name__ == "__main__":

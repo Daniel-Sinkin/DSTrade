@@ -58,7 +58,7 @@ class AlphaVantageAPIHandler:
     def __repr__(self) -> str:
         return f"AlphaVantageAPIHandler(api_key={obfuscate_api_key(self.api_key)})"
 
-    def send_request(
+    def _send_request(
         self,
         function: str,
         request_args: Optional[list[str]] = None,
@@ -107,7 +107,7 @@ class AlphaVantageAPIHandler:
 
         return response_data
 
-    def get_time_series_intraday(
+    def _get_time_series_intraday(
         self,
         symbol,
         interval,
@@ -118,7 +118,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="TIME_SERIES_INTRADAY",
             request_args=[
                 f"symbol={symbol}",
@@ -136,14 +136,14 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_time_series_daily(
+    def _get_time_series_daily(
         self,
         symbol,
         outputsize=None,
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="TIME_SERIES_DAILY",
             request_args=[
                 f"symbol={symbol}",
@@ -153,14 +153,14 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_time_series_daily_adjusted(
+    def _get_time_series_daily_adjusted(
         self,
         symbol,
         outputsize=None,
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="TIME_SERIES_DAILY_ADJUSTED",
             request_args=[
                 f"symbol={symbol}",
@@ -170,10 +170,10 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_time_series_weekly(
+    def _get_time_series_weekly(
         self, symbol, datatype: Literal["json", "csv"] = "json", **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="TIME_SERIES_WEEKLY",
             request_args=[
                 f"symbol={symbol}",
@@ -182,10 +182,10 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_time_series_weekly_adjusted(
+    def _get_time_series_weekly_adjusted(
         self, symbol, datatype: Literal["json", "csv"] = "json", **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="TIME_SERIES_WEEKLY_ADJUSTED",
             request_args=[
                 f"symbol={symbol}",
@@ -194,10 +194,10 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_time_series_monthly(
+    def _get_time_series_monthly(
         self, symbol, datatype: Literal["json", "csv"] = "json", **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="TIME_SERIES_MONTHLY",
             request_args=[
                 f"symbol={symbol}",
@@ -206,10 +206,10 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_time_series_monthly_adjusted(
+    def _get_time_series_monthly_adjusted(
         self, symbol, datatype: Literal["json", "csv"] = "json", **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="TIME_SERIES_MONTHLY_ADJUSTED",
             request_args=[
                 f"symbol={symbol}",
@@ -218,10 +218,10 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_realtime_bulk_quotes(
+    def _get_realtime_bulk_quotes(
         self, symbol, datatype: Literal["json", "csv"] = "json", **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="REALTIME_BULK_QUOTES",
             request_args=[
                 f"symbol={symbol}",
@@ -230,10 +230,10 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_symbol_search(
+    def _get_symbol_search(
         self, keywords, datatype: Literal["json", "csv"] = "json", **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="SYMBOL_SEARCH",
             request_args=[
                 f"keywords={keywords}",
@@ -242,10 +242,10 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_realtime_options(
+    def _get_realtime_options(
         self, symbol, contract=None, datatype: Literal["json", "csv"] = "json", **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="REALTIME_OPTIONS",
             request_args=[
                 f"symbol={symbol}",
@@ -255,10 +255,10 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_historical_options(
+    def _get_historical_options(
         self, symbol, date=None, datatype: Literal["json", "csv"] = "json", **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="HISTORICAL_OPTIONS",
             request_args=[
                 f"symbol={symbol}",
@@ -268,7 +268,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_news_sentiment(
+    def _get_news_sentiment(
         self,
         tickers=None,
         topics=None,
@@ -279,7 +279,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="NEWS_SENTIMENT",
             request_args=[]
             + ([f"tickers={tickers}"] if tickers is not None else [])
@@ -292,10 +292,10 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_insider_transactions(
+    def _get_insider_transactions(
         self, symbol, datatype: Literal["json", "csv"] = "json", **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="INSIDER_TRANSACTIONS",
             request_args=[
                 f"symbol={symbol}",
@@ -304,7 +304,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_analytics_sliding_window(
+    def _get_analytics_sliding_window(
         self,
         SYMBOLS,
         RANGE,
@@ -315,7 +315,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="ANALYTICS_SLIDING_WINDOW",
             request_args=[
                 f"SYMBOLS={SYMBOLS}",
@@ -329,10 +329,10 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_overview(
+    def _get_overview(
         self, symbol, datatype: Literal["json", "csv"] = "json", **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="OVERVIEW",
             request_args=[
                 f"symbol={symbol}",
@@ -341,10 +341,10 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_etf_profile(
+    def _get_etf_profile(
         self, symbol, datatype: Literal["json", "csv"] = "json", **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="ETF_PROFILE",
             request_args=[
                 f"symbol={symbol}",
@@ -353,10 +353,10 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_dividends(
+    def _get_dividends(
         self, symbol, datatype: Literal["json", "csv"] = "json", **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="DIVIDENDS",
             request_args=[
                 f"symbol={symbol}",
@@ -365,10 +365,10 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_splits(
+    def _get_splits(
         self, symbol, datatype: Literal["json", "csv"] = "json", **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="SPLITS",
             request_args=[
                 f"symbol={symbol}",
@@ -377,10 +377,10 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_income_statement(
+    def _get_income_statement(
         self, symbol, datatype: Literal["json", "csv"] = "json", **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="INCOME_STATEMENT",
             request_args=[
                 f"symbol={symbol}",
@@ -389,10 +389,10 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_balance_sheet(
+    def _get_balance_sheet(
         self, symbol, datatype: Literal["json", "csv"] = "json", **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="BALANCE_SHEET",
             request_args=[
                 f"symbol={symbol}",
@@ -401,10 +401,10 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_cash_flow(
+    def _get_cash_flow(
         self, symbol, datatype: Literal["json", "csv"] = "json", **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="CASH_FLOW",
             request_args=[
                 f"symbol={symbol}",
@@ -413,10 +413,10 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_earnings(
+    def _get_earnings(
         self, symbol, datatype: Literal["json", "csv"] = "json", **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="EARNINGS",
             request_args=[
                 f"symbol={symbol}",
@@ -425,10 +425,10 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_listing_status(
+    def _get_listing_status(
         self, date=None, state=None, datatype: Literal["json", "csv"] = "json", **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="LISTING_STATUS",
             request_args=[]
             + ([f"date={date}"] if date is not None else [])
@@ -437,14 +437,14 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_earnings_calendar(
+    def _get_earnings_calendar(
         self,
         symbol=None,
         horizon=None,
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="EARNINGS_CALENDAR",
             request_args=[]
             + ([f"symbol={symbol}"] if symbol is not None else [])
@@ -453,14 +453,14 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_currency_exchange_rate(
+    def _get_currency_exchange_rate(
         self,
         from_currency,
         to_currency,
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="CURRENCY_EXCHANGE_RATE",
             request_args=[
                 f"from_currency={from_currency}",
@@ -470,7 +470,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_fx_intraday(
+    def _get_fx_intraday(
         self,
         from_symbol,
         to_symbol,
@@ -479,7 +479,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="FX_INTRADAY",
             request_args=[
                 f"from_symbol={from_symbol}",
@@ -491,7 +491,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_fx_daily(
+    def _get_fx_daily(
         self,
         from_symbol,
         to_symbol,
@@ -499,7 +499,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="FX_DAILY",
             request_args=[
                 f"from_symbol={from_symbol}",
@@ -510,14 +510,14 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_fx_weekly(
+    def _get_fx_weekly(
         self,
         from_symbol,
         to_symbol,
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="FX_WEEKLY",
             request_args=[
                 f"from_symbol={from_symbol}",
@@ -527,14 +527,14 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_fx_monthly(
+    def _get_fx_monthly(
         self,
         from_symbol,
         to_symbol,
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="FX_MONTHLY",
             request_args=[
                 f"from_symbol={from_symbol}",
@@ -544,7 +544,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_crypto_intraday(
+    def _get_crypto_intraday(
         self,
         symbol,
         market,
@@ -553,7 +553,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="CRYPTO_INTRADAY",
             request_args=[
                 f"symbol={symbol}",
@@ -565,10 +565,10 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_digital_currency_daily(
+    def _get_digital_currency_daily(
         self, symbol, market, datatype: Literal["json", "csv"] = "json", **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="DIGITAL_CURRENCY_DAILY",
             request_args=[
                 f"symbol={symbol}",
@@ -578,10 +578,10 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_digital_currency_weekly(
+    def _get_digital_currency_weekly(
         self, symbol, market, datatype: Literal["json", "csv"] = "json", **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="DIGITAL_CURRENCY_WEEKLY",
             request_args=[
                 f"symbol={symbol}",
@@ -591,10 +591,10 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_digital_currency_monthly(
+    def _get_digital_currency_monthly(
         self, symbol, market, datatype: Literal["json", "csv"] = "json", **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="DIGITAL_CURRENCY_MONTHLY",
             request_args=[
                 f"symbol={symbol}",
@@ -604,10 +604,10 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_wti(
+    def _get_wti(
         self, interval=None, datatype: Literal["json", "csv"] = "json", **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="WTI",
             request_args=[]
             + ([f"interval={interval}"] if interval is not None else [])
@@ -615,10 +615,10 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_brent(
+    def _get_brent(
         self, interval=None, datatype: Literal["json", "csv"] = "json", **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="BRENT",
             request_args=[]
             + ([f"interval={interval}"] if interval is not None else [])
@@ -626,10 +626,10 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_natural_gas(
+    def _get_natural_gas(
         self, interval=None, datatype: Literal["json", "csv"] = "json", **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="NATURAL_GAS",
             request_args=[]
             + ([f"interval={interval}"] if interval is not None else [])
@@ -637,10 +637,10 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_copper(
+    def _get_copper(
         self, interval=None, datatype: Literal["json", "csv"] = "json", **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="COPPER",
             request_args=[]
             + ([f"interval={interval}"] if interval is not None else [])
@@ -648,10 +648,10 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_aluminum(
+    def _get_aluminum(
         self, interval=None, datatype: Literal["json", "csv"] = "json", **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="ALUMINUM",
             request_args=[]
             + ([f"interval={interval}"] if interval is not None else [])
@@ -659,10 +659,10 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_wheat(
+    def _get_wheat(
         self, interval=None, datatype: Literal["json", "csv"] = "json", **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="WHEAT",
             request_args=[]
             + ([f"interval={interval}"] if interval is not None else [])
@@ -670,10 +670,10 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_corn(
+    def _get_corn(
         self, interval=None, datatype: Literal["json", "csv"] = "json", **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="CORN",
             request_args=[]
             + ([f"interval={interval}"] if interval is not None else [])
@@ -681,10 +681,10 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_cotton(
+    def _get_cotton(
         self, interval=None, datatype: Literal["json", "csv"] = "json", **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="COTTON",
             request_args=[]
             + ([f"interval={interval}"] if interval is not None else [])
@@ -692,10 +692,10 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_sugar(
+    def _get_sugar(
         self, interval=None, datatype: Literal["json", "csv"] = "json", **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="SUGAR",
             request_args=[]
             + ([f"interval={interval}"] if interval is not None else [])
@@ -703,10 +703,10 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_coffee(
+    def _get_coffee(
         self, interval=None, datatype: Literal["json", "csv"] = "json", **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="COFFEE",
             request_args=[]
             + ([f"interval={interval}"] if interval is not None else [])
@@ -714,10 +714,10 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_all_commodities(
+    def _get_all_commodities(
         self, interval=None, datatype: Literal["json", "csv"] = "json", **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="ALL_COMMODITIES",
             request_args=[]
             + ([f"interval={interval}"] if interval is not None else [])
@@ -725,10 +725,10 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_real_gdp(
+    def _get_real_gdp(
         self, interval=None, datatype: Literal["json", "csv"] = "json", **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="REAL_GDP",
             request_args=[]
             + ([f"interval={interval}"] if interval is not None else [])
@@ -736,14 +736,14 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_treasury_yield(
+    def _get_treasury_yield(
         self,
         interval=None,
         maturity=None,
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="TREASURY_YIELD",
             request_args=[]
             + ([f"interval={interval}"] if interval is not None else [])
@@ -752,10 +752,10 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_federal_funds_rate(
+    def _get_federal_funds_rate(
         self, interval=None, datatype: Literal["json", "csv"] = "json", **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="FEDERAL_FUNDS_RATE",
             request_args=[]
             + ([f"interval={interval}"] if interval is not None else [])
@@ -763,10 +763,10 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_cpi(
+    def _get_cpi(
         self, interval=None, datatype: Literal["json", "csv"] = "json", **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="CPI",
             request_args=[]
             + ([f"interval={interval}"] if interval is not None else [])
@@ -774,7 +774,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_sma(
+    def _get_sma(
         self,
         symbol,
         interval,
@@ -784,7 +784,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="SMA",
             request_args=[
                 f"symbol={symbol}",
@@ -797,7 +797,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_ema(
+    def _get_ema(
         self,
         symbol,
         interval,
@@ -807,7 +807,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="EMA",
             request_args=[
                 f"symbol={symbol}",
@@ -820,7 +820,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_wma(
+    def _get_wma(
         self,
         symbol,
         interval,
@@ -830,7 +830,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="WMA",
             request_args=[
                 f"symbol={symbol}",
@@ -843,7 +843,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_dema(
+    def _get_dema(
         self,
         symbol,
         interval,
@@ -853,7 +853,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="DEMA",
             request_args=[
                 f"symbol={symbol}",
@@ -866,7 +866,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_tema(
+    def _get_tema(
         self,
         symbol,
         interval,
@@ -876,7 +876,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="TEMA",
             request_args=[
                 f"symbol={symbol}",
@@ -889,7 +889,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_trima(
+    def _get_trima(
         self,
         symbol,
         interval,
@@ -899,7 +899,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="TRIMA",
             request_args=[
                 f"symbol={symbol}",
@@ -912,7 +912,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_kama(
+    def _get_kama(
         self,
         symbol,
         interval,
@@ -922,7 +922,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="KAMA",
             request_args=[
                 f"symbol={symbol}",
@@ -935,7 +935,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_mama(
+    def _get_mama(
         self,
         symbol,
         interval,
@@ -946,7 +946,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="MAMA",
             request_args=[
                 f"symbol={symbol}",
@@ -960,7 +960,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_vwap(
+    def _get_vwap(
         self,
         symbol,
         interval,
@@ -968,7 +968,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="VWAP",
             request_args=[
                 f"symbol={symbol}",
@@ -979,7 +979,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_t3(
+    def _get_t3(
         self,
         symbol,
         interval,
@@ -989,7 +989,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="T3",
             request_args=[
                 f"symbol={symbol}",
@@ -1002,7 +1002,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_macd(
+    def _get_macd(
         self,
         symbol,
         interval,
@@ -1014,7 +1014,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="MACD",
             request_args=[
                 f"symbol={symbol}",
@@ -1029,7 +1029,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_macdext(
+    def _get_macdext(
         self,
         symbol,
         interval,
@@ -1044,7 +1044,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="MACDEXT",
             request_args=[
                 f"symbol={symbol}",
@@ -1062,7 +1062,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_stoch(
+    def _get_stoch(
         self,
         symbol,
         interval,
@@ -1075,7 +1075,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="STOCH",
             request_args=[
                 f"symbol={symbol}",
@@ -1091,7 +1091,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_stochf(
+    def _get_stochf(
         self,
         symbol,
         interval,
@@ -1102,7 +1102,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="STOCHF",
             request_args=[
                 f"symbol={symbol}",
@@ -1116,7 +1116,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_rsi(
+    def _get_rsi(
         self,
         symbol,
         interval,
@@ -1126,7 +1126,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="RSI",
             request_args=[
                 f"symbol={symbol}",
@@ -1139,7 +1139,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_stochrsi(
+    def _get_stochrsi(
         self,
         symbol,
         interval,
@@ -1152,7 +1152,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="STOCHRSI",
             request_args=[
                 f"symbol={symbol}",
@@ -1168,7 +1168,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_willr(
+    def _get_willr(
         self,
         symbol,
         interval,
@@ -1177,7 +1177,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="WILLR",
             request_args=[
                 f"symbol={symbol}",
@@ -1189,7 +1189,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_adx(
+    def _get_adx(
         self,
         symbol,
         interval,
@@ -1198,7 +1198,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="ADX",
             request_args=[
                 f"symbol={symbol}",
@@ -1210,7 +1210,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_adxr(
+    def _get_adxr(
         self,
         symbol,
         interval,
@@ -1219,7 +1219,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="ADXR",
             request_args=[
                 f"symbol={symbol}",
@@ -1231,7 +1231,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_apo(
+    def _get_apo(
         self,
         symbol,
         interval,
@@ -1243,7 +1243,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="APO",
             request_args=[
                 f"symbol={symbol}",
@@ -1258,7 +1258,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_ppo(
+    def _get_ppo(
         self,
         symbol,
         interval,
@@ -1270,7 +1270,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="PPO",
             request_args=[
                 f"symbol={symbol}",
@@ -1285,7 +1285,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_mom(
+    def _get_mom(
         self,
         symbol,
         interval,
@@ -1295,7 +1295,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="MOM",
             request_args=[
                 f"symbol={symbol}",
@@ -1308,7 +1308,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_bop(
+    def _get_bop(
         self,
         symbol,
         interval,
@@ -1316,7 +1316,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="BOP",
             request_args=[
                 f"symbol={symbol}",
@@ -1327,7 +1327,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_cci(
+    def _get_cci(
         self,
         symbol,
         interval,
@@ -1336,7 +1336,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="CCI",
             request_args=[
                 f"symbol={symbol}",
@@ -1348,7 +1348,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_cmo(
+    def _get_cmo(
         self,
         symbol,
         interval,
@@ -1358,7 +1358,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="CMO",
             request_args=[
                 f"symbol={symbol}",
@@ -1371,7 +1371,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_roc(
+    def _get_roc(
         self,
         symbol,
         interval,
@@ -1381,7 +1381,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="ROC",
             request_args=[
                 f"symbol={symbol}",
@@ -1394,7 +1394,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_rocr(
+    def _get_rocr(
         self,
         symbol,
         interval,
@@ -1404,7 +1404,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="ROCR",
             request_args=[
                 f"symbol={symbol}",
@@ -1417,7 +1417,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_aroon(
+    def _get_aroon(
         self,
         symbol,
         interval,
@@ -1426,7 +1426,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="AROON",
             request_args=[
                 f"symbol={symbol}",
@@ -1438,7 +1438,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_aroonosc(
+    def _get_aroonosc(
         self,
         symbol,
         interval,
@@ -1447,7 +1447,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="AROONOSC",
             request_args=[
                 f"symbol={symbol}",
@@ -1459,7 +1459,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_mfi(
+    def _get_mfi(
         self,
         symbol,
         interval,
@@ -1468,7 +1468,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="MFI",
             request_args=[
                 f"symbol={symbol}",
@@ -1480,7 +1480,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_trix(
+    def _get_trix(
         self,
         symbol,
         interval,
@@ -1490,7 +1490,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="TRIX",
             request_args=[
                 f"symbol={symbol}",
@@ -1503,7 +1503,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_ultosc(
+    def _get_ultosc(
         self,
         symbol,
         interval,
@@ -1514,7 +1514,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="ULTOSC",
             request_args=[
                 f"symbol={symbol}",
@@ -1528,7 +1528,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_dx(
+    def _get_dx(
         self,
         symbol,
         interval,
@@ -1537,7 +1537,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="DX",
             request_args=[
                 f"symbol={symbol}",
@@ -1549,7 +1549,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_minus_di(
+    def _get_minus_di(
         self,
         symbol,
         interval,
@@ -1558,7 +1558,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="MINUS_DI",
             request_args=[
                 f"symbol={symbol}",
@@ -1570,7 +1570,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_plus_di(
+    def _get_plus_di(
         self,
         symbol,
         interval,
@@ -1579,7 +1579,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="PLUS_DI",
             request_args=[
                 f"symbol={symbol}",
@@ -1591,7 +1591,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_minus_dm(
+    def _get_minus_dm(
         self,
         symbol,
         interval,
@@ -1600,7 +1600,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="MINUS_DM",
             request_args=[
                 f"symbol={symbol}",
@@ -1612,7 +1612,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_plus_dm(
+    def _get_plus_dm(
         self,
         symbol,
         interval,
@@ -1621,7 +1621,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="PLUS_DM",
             request_args=[
                 f"symbol={symbol}",
@@ -1633,7 +1633,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_bbands(
+    def _get_bbands(
         self,
         symbol,
         interval,
@@ -1646,7 +1646,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="BBANDS",
             request_args=[
                 f"symbol={symbol}",
@@ -1662,7 +1662,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_midpoint(
+    def _get_midpoint(
         self,
         symbol,
         interval,
@@ -1672,7 +1672,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="MIDPOINT",
             request_args=[
                 f"symbol={symbol}",
@@ -1685,7 +1685,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_midprice(
+    def _get_midprice(
         self,
         symbol,
         interval,
@@ -1694,7 +1694,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="MIDPRICE",
             request_args=[
                 f"symbol={symbol}",
@@ -1706,7 +1706,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_sar(
+    def _get_sar(
         self,
         symbol,
         interval,
@@ -1716,7 +1716,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="SAR",
             request_args=[
                 f"symbol={symbol}",
@@ -1729,7 +1729,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_trange(
+    def _get_trange(
         self,
         symbol,
         interval,
@@ -1737,7 +1737,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="TRANGE",
             request_args=[
                 f"symbol={symbol}",
@@ -1748,7 +1748,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_atr(
+    def _get_atr(
         self,
         symbol,
         interval,
@@ -1757,7 +1757,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="ATR",
             request_args=[
                 f"symbol={symbol}",
@@ -1769,7 +1769,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_natr(
+    def _get_natr(
         self,
         symbol,
         interval,
@@ -1778,7 +1778,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="NATR",
             request_args=[
                 f"symbol={symbol}",
@@ -1790,7 +1790,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_ad(
+    def _get_ad(
         self,
         symbol,
         interval,
@@ -1798,7 +1798,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="AD",
             request_args=[
                 f"symbol={symbol}",
@@ -1809,7 +1809,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_adosc(
+    def _get_adosc(
         self,
         symbol,
         interval,
@@ -1819,7 +1819,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="ADOSC",
             request_args=[
                 f"symbol={symbol}",
@@ -1832,7 +1832,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_obv(
+    def _get_obv(
         self,
         symbol,
         interval,
@@ -1840,7 +1840,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="OBV",
             request_args=[
                 f"symbol={symbol}",
@@ -1851,7 +1851,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_ht_trendline(
+    def _get_ht_trendline(
         self,
         symbol,
         interval,
@@ -1860,7 +1860,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="HT_TRENDLINE",
             request_args=[
                 f"symbol={symbol}",
@@ -1872,7 +1872,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_ht_sine(
+    def _get_ht_sine(
         self,
         symbol,
         interval,
@@ -1881,7 +1881,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="HT_SINE",
             request_args=[
                 f"symbol={symbol}",
@@ -1893,7 +1893,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_ht_trendmode(
+    def _get_ht_trendmode(
         self,
         symbol,
         interval,
@@ -1902,7 +1902,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="HT_TRENDMODE",
             request_args=[
                 f"symbol={symbol}",
@@ -1914,7 +1914,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_ht_dcperiod(
+    def _get_ht_dcperiod(
         self,
         symbol,
         interval,
@@ -1923,7 +1923,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="HT_DCPERIOD",
             request_args=[
                 f"symbol={symbol}",
@@ -1935,7 +1935,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_ht_dcphase(
+    def _get_ht_dcphase(
         self,
         symbol,
         interval,
@@ -1944,7 +1944,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="HT_DCPHASE",
             request_args=[
                 f"symbol={symbol}",
@@ -1956,7 +1956,7 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_ht_phasor(
+    def _get_ht_phasor(
         self,
         symbol,
         interval,
@@ -1965,7 +1965,7 @@ class AlphaVantageAPIHandler:
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="HT_PHASOR",
             request_args=[
                 f"symbol={symbol}",
@@ -1977,15 +1977,15 @@ class AlphaVantageAPIHandler:
             **kwargs,
         )
 
-    def get_analytics_fixed_window(self, *args, **kwargs) -> None:
+    def _get_analytics_fixed_window(self, *args, **kwargs) -> None:
         raise NotImplementedError(
             "The multiple RANGE argument is currently not supported!"
         )
 
-    def get_global_quote(
+    def _get_global_quote(
         self, symbol, datatype: Literal["json", "csv"] = "json", **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="GLOBAL_QUOTE",
             request_args=[
                 f"symbol={symbol}",
@@ -1993,61 +1993,61 @@ class AlphaVantageAPIHandler:
             + ([f"datatype={datatype}"] if datatype != "json" else []),
         )
 
-    def get_market_status(self, **kwargs) -> Optional[dict[str, any]]:
-        return self.send_request(function="MARKET_STATUS", **kwargs)
+    def _get_market_status(self, **kwargs) -> Optional[dict[str, any]]:
+        return self._send_request(function="MARKET_STATUS", **kwargs)
 
-    def get_top_gainers_losers(self, **kwargs) -> Optional[dict[str, any]]:
-        return self.send_request(function="TOP_GAINERS_LOSERS", **kwargs)
+    def _get_top_gainers_losers(self, **kwargs) -> Optional[dict[str, any]]:
+        return self._send_request(function="TOP_GAINERS_LOSERS", **kwargs)
 
-    def get_real_gdp_per_capita(
+    def _get_real_gdp_per_capita(
         self, datatype: Literal["json", "csv"] = "json", **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="REAL_GDP_PER_CAPITA",
             request_args=[] + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
-    def get_inflation(
+    def _get_inflation(
         self, datatype: Literal["json", "csv"] = "json", **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="INFLATION",
             request_args=[] + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
-    def get_retail_sales(
+    def _get_retail_sales(
         self, datatype: Literal["json", "csv"] = "json", **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="RETAIL_SALES",
             request_args=[] + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
-    def get_durables(
+    def _get_durables(
         self, datatype: Literal["json", "csv"] = "json", **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="DURABLES",
             request_args=[] + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
-    def get_unemployment(
+    def _get_unemployment(
         self, datatype: Literal["json", "csv"] = "json", **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="UNEMPLOYMENT",
             request_args=[] + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
-    def get_nonfarm_payroll(
+    def _get_nonfarm_payroll(
         self, datatype: Literal["json", "csv"] = "json", **kwargs
     ) -> Optional[dict[str, any]]:
-        return self.send_request(
+        return self._send_request(
             function="NONFARM_PAYROLL",
             request_args=[] + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,

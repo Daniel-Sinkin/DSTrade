@@ -58,7 +58,7 @@ class AlphaVantageAPIHandler:
     def __repr__(self) -> str:
         return f"AlphaVantageAPIHandler(api_key={obfuscate_api_key(self.api_key)})"
 
-    def send_request(
+    def _send_request(
         self,
         function: str,
         request_args: Optional[list[str]] = None,
