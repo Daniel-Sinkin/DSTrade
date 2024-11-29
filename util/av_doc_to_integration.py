@@ -92,7 +92,7 @@ def main() -> None:
             args_optional += f"    {arg}=None,"
             f_string = f'f"{arg}={brace_L}{arg}{brace_R}"'
             req_args_optional += (
-                f"            + ([{f_string}] if {arg} is None else []),"
+                f"            + ([{f_string}] if {arg} is None else [])"
             )
             if j < len(v["optional"]) - 1:
                 args_optional += "\n"
@@ -109,17 +109,17 @@ def main() -> None:
         return self.send_request(
             function=\"{k}\",
             request_args=[
-    {req_args_required}
-    {req_args_optional}
-                +([f"datatype={brace_L}datatype{brace_R}"] if datatype != \"json\" else [])
-            ],
+{req_args_required}
+            ]
+{req_args_optional}
+            + ([f"datatype={brace_L}datatype{brace_R}"] if datatype != \"json\" else []),
             **kwargs
         )
     """
         av_integration_py += args_required
 
     print("Saving to file.")
-    with open(Path("util").joinpath("av_integration_generated.py"), "w") as file:
+    with open(Path("util").joinpath("av_integration.py"), "w") as file:
         file.write(av_integration_py)
 
 
