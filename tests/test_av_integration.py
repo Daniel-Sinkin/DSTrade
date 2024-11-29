@@ -3,7 +3,13 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import numpy as np
 import pandas as pd
 
-from src.av_integration import AV_CANDLE_TF, AV_TICKER, AlphaVantageAPIHandler
+from src.av_integration import (
+    AV_CANDLE_TF,
+    AV_CURRENCY,
+    AV_CURRENCY_DIGITAL,
+    AV_TICKER,
+    AlphaVantageAPIHandler,
+)
 
 av_handler = AlphaVantageAPIHandler("demo")
 
@@ -64,3 +70,12 @@ def test_get_time_series_parallel() -> None:
     # fmt: on
 
     parallel_validate_candles(av_handler, call_details_list)
+
+
+def test_get_currency_exchange_pair() -> None:
+    bid, ask = av_handler.get_currency_exchange_pair(
+        from_currency=AV_CURRENCY.USD, to_currency=AV_CURRENCY_DIGITAL.BTC
+    )
+    assert isinstance(bid, float)
+    assert isinstance(ask, float)
+    assert 0.0 < bid < ask
