@@ -7,11 +7,12 @@ from src.av_integration import (
     AV_CANDLE_TF,
     AV_CURRENCY,
     AV_CURRENCY_DIGITAL,
-    AV_TICKER,
+    AV_SYMBOL,
     AlphaVantageAPIHandler,
 )
+from src.constants import options_columns
 
-av_handler = AlphaVantageAPIHandler("demo")
+handler = AlphaVantageAPIHandler("demo")
 
 
 def validate_candles(candle_df: pd.DataFrame) -> None:
@@ -53,29 +54,44 @@ def test_get_time_series_parallel() -> None:
     # fmt: off
     call_details_list = [
         # Daily time series calls
-        {"method": "get_time_series_daily", "kwargs": {"symbol": AV_TICKER.IBM}},
-        {"method": "get_time_series_daily", "kwargs": {"symbol": AV_TICKER.IBM, "outputsize": "full"}},
-        {"method": "get_time_series_daily", "kwargs": {"symbol": AV_TICKER.TSCO_LON, "outputsize": "full"}},
-        {"method": "get_time_series_daily", "kwargs": {"symbol": AV_TICKER.SHOP_TRT, "outputsize": "full"}},
-        {"method": "get_time_series_daily", "kwargs": {"symbol": AV_TICKER.GPV_TRV, "outputsize": "full"}},
-        {"method": "get_time_series_daily", "kwargs": {"symbol": AV_TICKER.MBG_DEX, "outputsize": "full"}},
-        {"method": "get_time_series_daily", "kwargs": {"symbol": AV_TICKER.RELIANCE_BSE, "outputsize": "full"}},
-        {"method": "get_time_series_daily", "kwargs": {"symbol": AV_TICKER._600104_SHH, "outputsize": "full"}},
-        {"method": "get_time_series_daily", "kwargs": {"symbol": AV_TICKER._000002_SHZ, "outputsize": "full"}},
+        {"method": "get_time_series_daily", "kwargs": {"symbol": AV_SYMBOL.IBM}},
+        {"method": "get_time_series_daily", "kwargs": {"symbol": AV_SYMBOL.IBM, "outputsize": "full"}},
+        {"method": "get_time_series_daily", "kwargs": {"symbol": AV_SYMBOL.TSCO_LON, "outputsize": "full"}},
+        {"method": "get_time_series_daily", "kwargs": {"symbol": AV_SYMBOL.SHOP_TRT, "outputsize": "full"}},
+        {"method": "get_time_series_daily", "kwargs": {"symbol": AV_SYMBOL.GPV_TRV, "outputsize": "full"}},
+        {"method": "get_time_series_daily", "kwargs": {"symbol": AV_SYMBOL.MBG_DEX, "outputsize": "full"}},
+        {"method": "get_time_series_daily", "kwargs": {"symbol": AV_SYMBOL.RELIANCE_BSE, "outputsize": "full"}},
+        {"method": "get_time_series_daily", "kwargs": {"symbol": AV_SYMBOL._600104_SHH, "outputsize": "full"}},
+        {"method": "get_time_series_daily", "kwargs": {"symbol": AV_SYMBOL._000002_SHZ, "outputsize": "full"}},
 
         # Intraday time series calls
-        {"method": "get_time_series_intraday", "kwargs": {"symbol": AV_TICKER.IBM, "interval": AV_CANDLE_TF.MIN5}},
-        {"method": "get_time_series_intraday", "kwargs": {"symbol": AV_TICKER.IBM, "interval": AV_CANDLE_TF.MIN5, "outputsize": "full"}},
+        {"method": "get_time_series_intraday", "kwargs": {"symbol": AV_SYMBOL.IBM, "interval": AV_CANDLE_TF.MIN5}},
+        {"method": "get_time_series_intraday", "kwargs": {"symbol": AV_SYMBOL.IBM, "interval": AV_CANDLE_TF.MIN5, "outputsize": "full"}},
     ]
     # fmt: on
 
-    parallel_validate_candles(av_handler, call_details_list)
+    parallel_validate_candles(handler, call_details_list)
 
 
 def test_get_currency_exchange_pair() -> None:
-    bid, ask = av_handler.get_currency_exchange_pair(
-        from_currency=AV_CURRENCY.USD, to_currency=AV_CURRENCY_DIGITAL.BTC
+    bid, ask = handler.get_currency_exchange_pair(
+        from_currency=AV_CURRENCY.USD, to_currency=AV_CURRENCY.JPY
     )
     assert isinstance(bid, float)
     assert isinstance(ask, float)
     assert 0.0 < bid < ask
+
+    bid, ask = handler.get_currency_exchange_pair(
+        from_currency=AV_CURRENCY_DIGITAL.BTC, to_currency=AV_CURRENCY.EUR
+    )
+    assert isinstance(bid, float)
+    assert isinstance(ask, float)
+    assert 0.0 < bid < ask
+
+
+def test_get_historical_options() -> None:
+    df = handler.get_historical_options(AV_SYMBOL.IBM)
+    assert set(df.columns) == set(options_columns)
+
+    df = handler.get_historical_options(AV_SYMBOL.IBM, date="2017-11-15")
+    assert set(df.columns) == set(options_columns)

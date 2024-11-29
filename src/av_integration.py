@@ -13,8 +13,9 @@ from .av_constants import (
     AV_CANDLE_TF,
     AV_CURRENCY,
     AV_CURRENCY_DIGITAL,
-    AV_TICKER,
+    AV_SYMBOL,
 )
+from .constants import options_columns
 
 api_logger = logging.Logger("APIHandler")
 api_logger.setLevel(logging.DEBUG)
@@ -69,17 +70,20 @@ class AlphaVantageAPIHandler:
 
     def get_time_series_daily(
         self,
-        symbol: AV_TICKER | str,
+        symbol: AV_SYMBOL | str,
         outputsize: Literal["full", "compact"] = "compact",
         datatype: Literal["json", "csv"] = "json",
         **kwargs,
     ) -> Optional[pd.DataFrame]:
         function = "TIME_SERIES_DAILY"
+        data_key = "Time Series (Daily)"
+
         data = self.send_request(
             function=function,
-            request_args=[f"{symbol=}"]
-            + ([f"{outputsize=}"] if outputsize != "compact" else [])
-            + ([f"{datatype=}"] if datatype != "json" else []),
+            request_args=[f"symbol={symbol}"]
+            + ([f"outputsize={outputsize}"] if outputsize != "compact" else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
+            data_key=data_key,
             **kwargs,
         )
         if data is None:
@@ -111,7 +115,7 @@ class AlphaVantageAPIHandler:
 
     def get_time_series_intraday(
         self,
-        symbol: AV_TICKER,
+        symbol: AV_SYMBOL,
         interval: AV_CANDLE_TF,
         adjusted: bool = True,
         extended_hours: bool = True,
@@ -121,18 +125,20 @@ class AlphaVantageAPIHandler:
         **kwargs,
     ) -> pd.DataFrame:
         function = "TIME_SERIES_INTRADAY"
-        symbol = str(symbol)
+        data_key = (f"Time Series ({interval})",)
+
         data = self.send_request(
             function=function,
             request_args=[
-                f"{symbol=}",
-                f"{interval=}",
-                f"{adjusted=}",
-                f"{extended_hours=}",
+                f"symbol={symbol}",
+                f"interval={interval}",
+                f"adjusted={adjusted}",
+                f"extended_hours={extended_hours}",
             ]
-            + ([f"{month=}"] if month is not None else [])
-            + ([f"{outputsize=}"] if outputsize != "compact" else [])
-            + ([f"{datatype=}"] if datatype != "json" else []),
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"outputsize={outputsize}"] if outputsize != "compact" else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
+            data_key=data_key,
             **kwargs,
         )
         if data is None:
@@ -164,12 +170,23 @@ class AlphaVantageAPIHandler:
 
     def get_currency_exchange_pair(
         self,
-        from_currency: AV_CURRENCY | AV_CURRENCY_DIGITAL,
-        to_currency: AV_CURRENCY | AV_CURRENCY_DIGITAL,
+        from_currency: AV_CURRENCY | AV_CURRENCY_DIGITAL | str,
+        to_currency: AV_CURRENCY | AV_CURRENCY_DIGITAL | str,
+        **kwargs,
     ) -> tuple[float, float]:
         function = "CURRENCY_EXCHANGE_RATE"
+        data_key = "Realtime Currency Exchange Rate"
+        from_currency = str(from_currency)
+        to_currency = str(to_currency)
+
         data = self.send_request(
-            function=function, request_args=[f"{from_currency=}", f"{to_currency=}"]
+            function=function,
+            request_args=[
+                f"from_currency={from_currency}",
+                f"to_currency={to_currency}",
+            ],
+            data_key=data_key,
+            **kwargs,
         )
         if data is None:
             return None
@@ -178,13 +195,67 @@ class AlphaVantageAPIHandler:
         ask = float(data["9. Ask Price"])
         return bid, ask
 
+    def get_historical_options(
+        self,
+        symbol: AV_SYMBOL,
+        date: Optional[str] = None,
+        datatype: Literal["json", "csv"] = "json",
+        **kwargs,
+    ) -> Optional[pd.DataFrame]:
+        function = "HISTORICAL_OPTIONS"
+        data_key = "data"
+
+        data = self.send_request(
+            function=function,
+            request_args=[
+                f"symbol={symbol}",
+            ]
+            + ([f"date={date}"] if date is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
+            data_key=data_key,
+            **kwargs,
+        )
+        if data is None:
+            return None
+
+        df = pd.DataFrame.from_records(data)
+        df.set_index("contractID", inplace=True)
+        df.drop(columns="symbol", inplace=True)
+
+        df["expiration"] = pd.to_datetime(df["expiration"])
+        df["date"] = pd.to_datetime(df["date"])
+
+        # fmt: off
+        float_cols = ["strike", "last", "mark", "bid", "ask", "implied_volatility", "delta", "gamma", "theta", "vega", "rho"]
+        int_cols = ["bid_size", "ask_size", "volume", "open_interest"]
+        # fmt: on
+        for col in float_cols:
+            df[col] = df[col].astype(np.float32)
+
+        for col in int_cols:
+            df[col] = df[col].astype(np.int32)
+
+        df["is_call"] = np.where(df["type"] == "call", True, False)
+        df.drop(columns="type", inplace=True)
+
+        df = df[options_columns]
+        return df
+
     def send_request(
         self,
         function: str,
         request_args: list[str],
+        data_key: Optional[str] = None,
         save_result: bool = False,
-        log_metadata: bool = False,
     ) -> Optional[dict[str, any]]:
+        """
+        The key where the data is, is rather inconsitent in the API, if data_key
+        is not set then we first check if there is only one key, then that one has to be
+        the data key, otherwise we check for a list of known non-data keys and return the
+        other keys' value (not guaranteed to be correct until everything is implemented)
+
+        Best practice is to just pass it.
+        """
         if 'datatype="csv"' in request_args:
             raise NotImplementedError("Currently only JSON is supported!")
 
@@ -197,8 +268,13 @@ class AlphaVantageAPIHandler:
         except Exception as e:
             self.logger.error(f"Request got generic error '{e}'")
             return None
-
         response_data: dict[str, any] = response.json()
+
+        if save_result:
+            filename = f"{get_utc_timestamp_ms()}" + "__" + "&".join(request_args)
+            with open(f"saved_responses/{filename}.json", "w") as file:
+                json.dump(response_data, file)
+
         if "Information" in response_data:
             assert len(response_data) == 1
             self.logger.warning(
@@ -211,42 +287,15 @@ class AlphaVantageAPIHandler:
                 f"Got the following error response: {response_data['Error Message']}."
             )
             return None
-        assert "Meta Data" in response_data, "Successful responses should have metadata"
-        if log_metadata:
-            self.logger.info("Meta Data: %s", response_data["Meta Data"])
-        assert (
-            len(response_data) == 2
-        ), "Successful responses should have exactly 2 keys"
+        if data_key is None:
+            if "Meta Data" in response_data:
+                self.logger.debug("Meta Data: %s", response_data["Meta Data"])
+                data_key = [x for x in response_data if x != "Meta Data"]
+            else:
+                data_key = list(response_data)[0]
 
         self.logger.debug(
             f"Successfuly sent request '{obfuscate_request_url(request_url, self.api_key)}'"
         )
-        if save_result:
-            filename = f"{get_utc_timestamp_ms()}" + "__" + "&".join(request_args)
-            with open(f"saved_responses/{filename}.json", "w") as file:
-                json.dump(response_data, file)
 
-        # The other key aside from 'Meta Data'
-        content_key = [k for k in response_data.keys() if k != "Meta Data"][0]
-
-        return response_data[content_key]
-
-
-def get_data() -> None:
-    alpha_vantage_api_handler = AlphaVantageAPIHandler(api_key="demo")
-    data = alpha_vantage_api_handler.get_time_series_daily(
-        AV_TICKER.IBM, outputsize="full", save_result=True, log_metadata=True
-    )
-    if data is None:
-        api_logger.warning("Received no data, aborting!")
-        return
-
-    data.to_pickle("test.pkl")
-
-
-if __name__ == "__main__":
-    get_data()
-    df: pd.DataFrame = pd.read_pickle("test.pkl")
-    print(df)
-    print(df.dtypes)
-    print(str(AV_TICKER.IBM))
+        return response_data[data_key]

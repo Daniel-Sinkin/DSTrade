@@ -1,7 +1,7 @@
 from enum import StrEnum
 
 
-class AV_TICKER(StrEnum):
+class AV_SYMBOL(StrEnum):
     IBM = "IBM"
     TSCO_LON = "TSCO.LON"
     SHOP_TRT = "SHOP.TRT"
