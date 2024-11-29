@@ -3,7 +3,7 @@ import os
 import pandas as pd
 from dotenv import load_dotenv
 
-from src.av_integration import AlphaVantageAPIHandler
+from src.av_integration_api import AlphaVantageAPIHandler
 
 load_dotenv()
 av_api_key = os.getenv("API_KEY_ALPHAVANTAGE")

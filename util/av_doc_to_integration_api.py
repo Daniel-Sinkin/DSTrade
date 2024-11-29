@@ -75,7 +75,7 @@ def main() -> None:
     iteration = 0
 
     av_integration_py = "from typing import Optional, Literal\n"
-    with open(Path("util").joinpath("_av_integration_base.py"), "r") as file:
+    with open(Path("util").joinpath("_av_integration_api_base.py"), "r") as file:
         av_integration_py = file.read()
 
     for k, v in grouped_dict.items():
@@ -240,9 +240,9 @@ def main() -> None:
     """
 
     num_hardcoded = 9
-    print(f"Generating {len(grouped_dict) + 9} api functions.")
+    print(f"Generating {len(grouped_dict) + num_hardcoded} api functions.")
     print("Saving to file.")
-    with open(Path("src").joinpath("av_integration.py"), "w") as file:
+    with open(Path("src").joinpath("av_integration_api.py"), "w") as file:
         file.write(av_integration_py)
 
 
