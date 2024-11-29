@@ -113,7 +113,7 @@ def main() -> None:
     """
         av_integration_py += args_required
 
-    with open(Path("src").joinpath("av_integration.py"), "w") as file:
+    with open(Path("util").joinpath("av_integration_generated.py"), "w") as file:
         file.write(av_integration_py)
 
 
