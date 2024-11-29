@@ -6,7 +6,7 @@ from src.av_constants import (
     AV_CURRENCY_DIGITAL,
     AV_SYMBOL,
 )
-from src.av_integration import AlphaVantageAPIHandler
+from src.av_integration_old import AlphaVantageAPIHandler
 
 
 def main() -> None:

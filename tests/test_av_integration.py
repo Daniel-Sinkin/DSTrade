@@ -3,7 +3,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import numpy as np
 import pandas as pd
 
-from src.av_integration import (
+from src.av_integration_old import (
     AV_CANDLE_TF,
     AV_CURRENCY,
     AV_CURRENCY_DIGITAL,
