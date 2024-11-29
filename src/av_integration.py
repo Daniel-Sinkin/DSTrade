@@ -2,13 +2,19 @@ import datetime as dt
 import json
 import logging
 import os
-from enum import StrEnum, auto
 from typing import Literal, Optional
 
 import numpy as np
 import pandas as pd
 import requests
 from dotenv import load_dotenv
+
+from .av_constants import (
+    AV_CANDLE_TF,
+    AV_CURRENCY,
+    AV_CURRENCY_DIGITAL,
+    AV_TICKER,
+)
 
 api_logger = logging.Logger("APIHandler")
 api_logger.setLevel(logging.DEBUG)
@@ -20,26 +26,6 @@ formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(messag
 stream_handler.setFormatter(formatter)
 
 api_logger.addHandler(stream_handler)
-
-
-class AV_TICKER(StrEnum):
-    IBM = "IBM"
-    TSCO_LON = "TSCO.LON"
-    SHOP_TRT = "SHOP.TRT"
-    GPV_TRV = "GPV.TRV"
-    MBG_DEX = "MBG.DEX"
-    RELIANCE_BSE = "RELIANCE.BSE"
-    _600104_SHH = "600104.SHH"
-    _000002_SHZ = "000002.SHZ"
-
-
-class AV_CANDLE_TF(StrEnum):
-    MIN = "1min"
-    MIN5 = "5min"
-    MIN15 = "15min"
-    MIN30 = "30min"
-    HOUR = "60min"
-
 
 load_dotenv()
 API_KEY_ALPHAVANTAGE = os.getenv("API_KEY_ALPHAVANTAGE")
@@ -91,9 +77,9 @@ class AlphaVantageAPIHandler:
         function = "TIME_SERIES_DAILY"
         data = self.send_request(
             function=function,
-            request_args=[f"symbol={symbol}"]
-            + ([f"outputsize={outputsize}"] if outputsize != "compact" else [])
-            + ([f"datatype={datatype}"] if datatype != "json" else []),
+            request_args=[f"{symbol=}"]
+            + ([f"{outputsize=}"] if outputsize != "compact" else [])
+            + ([f"{datatype=}"] if datatype != "json" else []),
             **kwargs,
         )
         if data is None:
@@ -135,17 +121,18 @@ class AlphaVantageAPIHandler:
         **kwargs,
     ) -> pd.DataFrame:
         function = "TIME_SERIES_INTRADAY"
+        symbol = str(symbol)
         data = self.send_request(
             function=function,
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
-                f"adjusted={adjusted}",
-                f"extended_hours={extended_hours}",
+                f"{symbol=}",
+                f"{interval=}",
+                f"{adjusted=}",
+                f"{extended_hours=}",
             ]
-            + ([f"month={month}"] if month is not None else [])
-            + ([f"outputsize={outputsize}"] if outputsize != "compact" else [])
-            + ([f"datatype={datatype}"] if datatype != "json" else []),
+            + ([f"{month=}"] if month is not None else [])
+            + ([f"{outputsize=}"] if outputsize != "compact" else [])
+            + ([f"{datatype=}"] if datatype != "json" else []),
             **kwargs,
         )
         if data is None:
@@ -174,6 +161,22 @@ class AlphaVantageAPIHandler:
         )
         self.logger.debug("Pulled %d daily candles for %s", len(df), symbol)
         return df
+
+    def get_currency_exchange_pair(
+        self,
+        from_currency: AV_CURRENCY | AV_CURRENCY_DIGITAL,
+        to_currency: AV_CURRENCY | AV_CURRENCY_DIGITAL,
+    ) -> tuple[float, float]:
+        function = "CURRENCY_EXCHANGE_RATE"
+        data = self.send_request(
+            function=function, request_args=[f"{from_currency=}", f"{to_currency=}"]
+        )
+        if data is None:
+            return None
+
+        bid = float(data["8. Bid Price"])
+        ask = float(data["9. Ask Price"])
+        return bid, ask
 
     def send_request(
         self,
