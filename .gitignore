@@ -167,3 +167,6 @@ cython_debug/
 .DS_Store
 
 .ruff_cache/
+
+# This should be built via the build.sh script
+src/av_integration.py
