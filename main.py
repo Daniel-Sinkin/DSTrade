@@ -11,7 +11,7 @@ from src.av_integration import AlphaVantageAPIHandler
 
 def main() -> None:
     handler = AlphaVantageAPIHandler(api_key="demo")
-    retval = handler.get_historical_options(AV_SYMBOL.IBM)
+    retval = handler.get_sentiment(tickers=[AV_SYMBOL.AAPL])
 
     print(retval)
 

@@ -13,9 +13,11 @@ from .av_constants import (
     AV_CANDLE_TF,
     AV_CURRENCY,
     AV_CURRENCY_DIGITAL,
+    AV_SENTIMENT,
+    AV_SENTIMENT_ARTICLE,
     AV_SYMBOL,
 )
-from .constants import options_columns
+from .constants import OPTIONS_COLUMNS
 
 api_logger = logging.Logger("APIHandler")
 api_logger.setLevel(logging.DEBUG)
@@ -238,15 +240,46 @@ class AlphaVantageAPIHandler:
         df["is_call"] = np.where(df["type"] == "call", True, False)
         df.drop(columns="type", inplace=True)
 
-        df = df[options_columns]
+        df = df[OPTIONS_COLUMNS]
         return df
+
+    def get_sentiment(
+        self,
+        tickers: Optional[list[AV_SYMBOL]] = None,
+        topics: Optional[list[AV_SENTIMENT]] = None,
+        time_from: Optional[str] = None,
+        time_to: Optional[str] = None,
+        sort: Literal["LATEST", "EARLIEST", "RELEVANCE"] = "LATEST",
+        limit: int = 50,
+        **kwargs,
+    ) -> Optional[list[AV_SENTIMENT_ARTICLE]]:
+        function = "NEWS_SENTIMENT"
+        data_key = "feed"
+        if tickers is not None:
+            assert len(tickers) > 0
+        data = self.send_request(
+            function=function,
+            request_args=[]
+            + ([f"tickers={','.join(tickers)}"] if tickers is not None else [])
+            + ([f"topics={','.join(topics)}"] if topics is not None else [])
+            + ([f"time_from={time_from}"] if time_from is not None else [])
+            + ([f"time_to={time_to}"] if time_to is not None else [])
+            + ([f"sort={sort}"] if sort != "LATEST" else [])
+            + ([f"limit={limit}"] if limit != 50 else []),
+            data_key=data_key,
+            **kwargs,
+        )
+        if data is None:
+            return None
+
+        return data
 
     def send_request(
         self,
         function: str,
         request_args: list[str],
         data_key: Optional[str] = None,
-        save_result: bool = False,
+        save_result: bool = True,
     ) -> Optional[dict[str, any]]:
         """
         The key where the data is, is rather inconsitent in the API, if data_key
@@ -271,7 +304,11 @@ class AlphaVantageAPIHandler:
         response_data: dict[str, any] = response.json()
 
         if save_result:
-            filename = f"{get_utc_timestamp_ms()}" + "__" + "&".join(request_args)
+            filename = (
+                f"{get_utc_timestamp_ms()}"
+                + "__"
+                + "&".join(["function"] + request_args)
+            )
             with open(f"saved_responses/{filename}.json", "w") as file:
                 json.dump(response_data, file)
 

@@ -1,7 +1,9 @@
 from enum import StrEnum
+from typing import TypedDict
 
 
 class AV_SYMBOL(StrEnum):
+    AAPL = "AAPL"
     IBM = "IBM"
     TSCO_LON = "TSCO.LON"
     SHOP_TRT = "SHOP.TRT"
@@ -756,3 +758,49 @@ class AV_CURRENCY_DIGITAL(StrEnum):  # As of 2024-11-29
     ZIL = "ZIL"
     ZLA = "ZLA"
     ZRX = "ZRX"
+
+
+class AV_SENTIMENT(StrEnum):  # as of 2024-11-29
+    BLOCKCHAIN = "blockchain"
+    EARNINGS = "earnings"
+    IPO = "ipo"
+    MNA = "mergers_and_acquisitions"
+    FINANCIAL_MARKETS = "financial_markets"
+    ECON_FISCAL = "economy_fiscal"
+    ECON_MONETARY = "economy_monetary"
+    ECON_MACRO = "ecenomy_macro"
+    ENERGY_TRANSPORT = "energy_transportation"
+    FINANCE = "finance"
+    LIFE_SCIENCES = "life_sciences"
+    MANUFACTURING = "manufacturing"
+    REAL_ESTATE = "real_estate"
+    RETAIL_WHOLESALE = "retail_wholesale"
+    TECH = "technology"
+
+
+class _TOPIC(TypedDict):
+    topic: str
+    relevance_score: str
+
+
+class _TICKER_SENTIMENT(TypedDict):
+    ticker: str
+    relevance_score: str
+    ticker_sentiment_score: str
+    ticker_sentiment_label: str
+
+
+class AV_SENTIMENT_ARTICLE(TypedDict):
+    title: str
+    url: str
+    time_published: str
+    authors: list[str]
+    summary: str
+    banner_image: str
+    source: str
+    category_within_source: str
+    source_domain: str
+    topics: list[_TOPIC]
+    overall_sentiment_score: float
+    overall_sentiment_label: str
+    ticker_sentiment: list[_TICKER_SENTIMENT]

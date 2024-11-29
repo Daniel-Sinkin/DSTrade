@@ -10,7 +10,7 @@ from src.av_integration import (
     AV_SYMBOL,
     AlphaVantageAPIHandler,
 )
-from src.constants import options_columns
+from src.constants import OPTIONS_COLUMNS
 
 handler = AlphaVantageAPIHandler("demo")
 
@@ -91,7 +91,11 @@ def test_get_currency_exchange_pair() -> None:
 
 def test_get_historical_options() -> None:
     df = handler.get_historical_options(AV_SYMBOL.IBM)
-    assert set(df.columns) == set(options_columns)
+    assert set(df.columns) == set(OPTIONS_COLUMNS)
 
     df = handler.get_historical_options(AV_SYMBOL.IBM, date="2017-11-15")
-    assert set(df.columns) == set(options_columns)
+    assert set(df.columns) == set(OPTIONS_COLUMNS)
+
+
+def test_get_sentiment() -> None:
+    assert handler.get_sentiment(tickers=[AV_SYMBOL.AAPL]) is not None

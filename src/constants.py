@@ -1,4 +1,4 @@
-options_columns = [
+OPTIONS_COLUMNS = [
     "date",
     "expiration",
     "is_call",
