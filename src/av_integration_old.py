@@ -70,6 +70,62 @@ class AlphaVantageAPIHandler:
     def __repr__(self) -> str:
         return f"AlphaVantageAPIHandler(api_key={obfuscate_api_key(self.api_key)})"
 
+    def send_request(
+        self,
+        function: str,
+        request_args: list[str],
+        save_result: bool = True,
+    ) -> Optional[dict[str, any] | list[dict[str, any]]]:
+        """
+        The key where the data is, is rather inconsitent in the API, if data_key
+        is not set then we first check if there is only one key, then that one has to be
+        the data key, otherwise we check for a list of known non-data keys and return the
+        other keys' value (not guaranteed to be correct until everything is implemented)
+
+        Best practice is to just pass it.
+        """
+        if 'datatype="csv"' in request_args:
+            raise NotImplementedError("Currently only JSON is supported!")
+
+        request_url = self.url_request + "&".join(
+            [f"function={function}"] + request_args + [f"apikey={self.api_key}"]
+        )
+
+        try:
+            response = requests.get(request_url)
+        except Exception as e:
+            self.logger.error(f"Request got generic error '{e}'")
+            return None
+        response_data: dict[str, any] = response.json()
+
+        if save_result:
+            filename = (
+                f"{get_utc_timestamp_ms()}"
+                + "__"
+                + "&".join(["function"] + request_args)
+            )
+            with open(f"saved_responses/{filename}.json", "w") as file:
+                json.dump(response_data, file)
+
+        if "Information" in response_data:
+            assert len(response_data) == 1
+            self.logger.warning(
+                f"Got Information as reponse: '{response_data['Information']}'"
+            )
+            return None
+        if "Error Message" in response_data:
+            assert len(response_data) == 1, "'Error Message' key but also other keys!"
+            self.logger.warning(
+                f"Got the following error response: {response_data['Error Message']}."
+            )
+            return None
+
+        self.logger.debug(
+            f"Successfuly sent request '{obfuscate_request_url(request_url, self.api_key)}'"
+        )
+
+        return response_data
+
     def get_time_series_daily_request(
         self,
         symbol: AV_SYMBOL | str,
