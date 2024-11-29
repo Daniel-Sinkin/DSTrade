@@ -64,14 +64,6 @@ class AlphaVantageAPIHandler:
         request_args: Optional[list[str]] = None,
         save_result: bool = True,
     ) -> Optional[dict[str, any] | list[dict[str, any]]]:
-        """
-        The key where the data is, is rather inconsitent in the API, if data_key
-        is not set then we first check if there is only one key, then that one has to be
-        the data key, otherwise we check for a list of known non-data keys and return the
-        other keys' value (not guaranteed to be correct until everything is implemented)
-
-        Best practice is to just pass it.
-        """
         if request_args is None:
             request_args = []
 
@@ -91,9 +83,7 @@ class AlphaVantageAPIHandler:
 
         if save_result:
             filename = (
-                f"{get_utc_timestamp_ms()}"
-                + "__"
-                + "&".join(["function"] + request_args)
+                f"{get_utc_timestamp_ms()}" + "__" + "&".join([function] + request_args)
             )
             with open(f"saved_responses/{filename}.json", "w") as file:
                 json.dump(response_data, file)

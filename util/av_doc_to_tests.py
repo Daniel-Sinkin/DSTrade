@@ -60,7 +60,7 @@ def main() -> None:
         "    def get_analytics_fixed_window(self, *args, **kwargs) -> None: ..."
     )
 
-    with open(Path("util").joinpath(filename), "w") as file:
+    with open(Path("tests").joinpath(filename), "w") as file:
         file.write(test_av_integration)
 
 

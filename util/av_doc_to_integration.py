@@ -78,7 +78,6 @@ def main() -> None:
     with open(Path("util").joinpath("_av_integration_base.py"), "r") as file:
         av_integration_py = file.read()
 
-    print(f"Generating {len(grouped_dict)} api functions.")
     for k, v in grouped_dict.items():
         iteration += 1
         args_required = ""
@@ -240,8 +239,10 @@ def main() -> None:
         ) 
     """
 
+    num_hardcoded = 9
+    print(f"Generating {len(grouped_dict) + 9} api functions.")
     print("Saving to file.")
-    with open(Path("util").joinpath("av_integration.py"), "w") as file:
+    with open(Path("src").joinpath("av_integration.py"), "w") as file:
         file.write(av_integration_py)
 
 
