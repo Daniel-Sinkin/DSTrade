@@ -55,7 +55,10 @@ def main() -> None:
                     current_group["required"].append(param)
             elif "Optional:" in item:
                 param = item.replace(" ", "").replace("❚Optional:", "").strip()
-                if param != "datatype" and param not in current_group["optional"]:
+                if param == "time_fromandtime_to":
+                    current_group["optional"].append("time_from")
+                    current_group["optional"].append("time_to")
+                elif param != "datatype" and param not in current_group["optional"]:
                     current_group["optional"].append(param)
 
     # After the loop, save the last group under its function name
@@ -88,7 +91,7 @@ def main() -> None:
             args_optional += f"    {arg}=None,"
             f_string = f'f"{arg}={brace_L}{arg}{brace_R}"'
             req_args_optional += (
-                f"            + ([{f_string}] if {arg} is None else [])"
+                f"            + ([{f_string}] if {arg} is None else []),"
             )
             if j < len(v["optional"]) - 1:
                 args_optional += "\n"
@@ -107,6 +110,7 @@ def main() -> None:
             request_args=[
     {req_args_required}
     {req_args_optional}
+                +([f"datatype={brace_L}datatype{brace_R}"] if datatype != \"json\" else [])
             ],
             **kwargs
         )
