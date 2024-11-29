@@ -61,7 +61,7 @@ class AlphaVantageAPIHandler:
     def send_request(
         self,
         function: str,
-        request_args: list[str],
+        request_args: Optional[list[str]] = None,
         save_result: bool = True,
     ) -> Optional[dict[str, any] | list[dict[str, any]]]:
         """
@@ -72,6 +72,9 @@ class AlphaVantageAPIHandler:
 
         Best practice is to just pass it.
         """
+        if request_args is None:
+            request_args = []
+
         if 'datatype="csv"' in request_args:
             raise NotImplementedError("Currently only JSON is supported!")
 

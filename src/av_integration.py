@@ -1,5 +1,3 @@
-"""Built on top of the generated file."""
-
 import datetime as dt
 import json
 import logging
@@ -63,7 +61,7 @@ class AlphaVantageAPIHandler:
     def send_request(
         self,
         function: str,
-        request_args: list[str],
+        request_args: Optional[list[str]] = None,
         save_result: bool = True,
     ) -> Optional[dict[str, any] | list[dict[str, any]]]:
         """
@@ -74,6 +72,9 @@ class AlphaVantageAPIHandler:
 
         Best practice is to just pass it.
         """
+        if request_args is None:
+            request_args = []
+
         if 'datatype="csv"' in request_args:
             raise NotImplementedError("Currently only JSON is supported!")
 
@@ -132,16 +133,16 @@ class AlphaVantageAPIHandler:
             request_args=[
                 f"symbol={symbol}",
                 f"interval={interval}",
-                +([f"adjusted={adjusted}"] if adjusted is None else []),
-                +(
-                    [f"extended_hours={extended_hours}"]
-                    if extended_hours is None
-                    else []
-                ),
-                +([f"month={month}"] if month is None else []),
-                +([f"outputsize={outputsize}"] if outputsize is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"adjusted={adjusted}"] if adjusted is not None else [])
+            + (
+                [f"extended_hours={extended_hours}"]
+                if extended_hours is not None
+                else []
+            )
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"outputsize={outputsize}"] if outputsize is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -156,9 +157,9 @@ class AlphaVantageAPIHandler:
             function="TIME_SERIES_DAILY",
             request_args=[
                 f"symbol={symbol}",
-                +([f"outputsize={outputsize}"] if outputsize is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"outputsize={outputsize}"] if outputsize is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -173,9 +174,9 @@ class AlphaVantageAPIHandler:
             function="TIME_SERIES_DAILY_ADJUSTED",
             request_args=[
                 f"symbol={symbol}",
-                +([f"outputsize={outputsize}"] if outputsize is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"outputsize={outputsize}"] if outputsize is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -186,8 +187,8 @@ class AlphaVantageAPIHandler:
             function="TIME_SERIES_WEEKLY",
             request_args=[
                 f"symbol={symbol}",
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -198,8 +199,8 @@ class AlphaVantageAPIHandler:
             function="TIME_SERIES_WEEKLY_ADJUSTED",
             request_args=[
                 f"symbol={symbol}",
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -210,8 +211,8 @@ class AlphaVantageAPIHandler:
             function="TIME_SERIES_MONTHLY",
             request_args=[
                 f"symbol={symbol}",
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -222,8 +223,8 @@ class AlphaVantageAPIHandler:
             function="TIME_SERIES_MONTHLY_ADJUSTED",
             request_args=[
                 f"symbol={symbol}",
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -234,8 +235,8 @@ class AlphaVantageAPIHandler:
             function="REALTIME_BULK_QUOTES",
             request_args=[
                 f"symbol={symbol}",
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -246,8 +247,8 @@ class AlphaVantageAPIHandler:
             function="SYMBOL_SEARCH",
             request_args=[
                 f"keywords={keywords}",
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -258,9 +259,9 @@ class AlphaVantageAPIHandler:
             function="REALTIME_OPTIONS",
             request_args=[
                 f"symbol={symbol}",
-                +([f"contract={contract}"] if contract is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"contract={contract}"] if contract is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -271,9 +272,9 @@ class AlphaVantageAPIHandler:
             function="HISTORICAL_OPTIONS",
             request_args=[
                 f"symbol={symbol}",
-                +([f"date={date}"] if date is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"date={date}"] if date is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -290,15 +291,14 @@ class AlphaVantageAPIHandler:
     ) -> Optional[dict[str, any]]:
         return self.send_request(
             function="NEWS_SENTIMENT",
-            request_args=[
-                +([f"tickers={tickers}"] if tickers is None else []),
-                +([f"topics={topics}"] if topics is None else []),
-                +([f"time_from={time_from}"] if time_from is None else []),
-                +([f"time_to={time_to}"] if time_to is None else []),
-                +([f"sort={sort}"] if sort is None else []),
-                +([f"limit={limit}"] if limit is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            request_args=[]
+            + ([f"tickers={tickers}"] if tickers is not None else [])
+            + ([f"topics={topics}"] if topics is not None else [])
+            + ([f"time_from={time_from}"] if time_from is not None else [])
+            + ([f"time_to={time_to}"] if time_to is not None else [])
+            + ([f"sort={sort}"] if sort is not None else [])
+            + ([f"limit={limit}"] if limit is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -309,31 +309,8 @@ class AlphaVantageAPIHandler:
             function="INSIDER_TRANSACTIONS",
             request_args=[
                 f"symbol={symbol}",
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
-            **kwargs,
-        )
-
-    def get_analytics_fixed_window(
-        self,
-        SYMBOLS,
-        RANGE,
-        INTERVAL,
-        CALCULATIONS,
-        OHLC=None,
-        datatype: Literal["json", "csv"] = "json",
-        **kwargs,
-    ) -> Optional[dict[str, any]]:
-        return self.send_request(
-            function="ANALYTICS_FIXED_WINDOW",
-            request_args=[
-                f"SYMBOLS={SYMBOLS}",
-                f"RANGE={RANGE}",
-                f"INTERVAL={INTERVAL}",
-                f"CALCULATIONS={CALCULATIONS}",
-                +([f"OHLC={OHLC}"] if OHLC is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -356,9 +333,9 @@ class AlphaVantageAPIHandler:
                 f"INTERVAL={INTERVAL}",
                 f"WINDOW_SIZE={WINDOW_SIZE}",
                 f"CALCULATIONS={CALCULATIONS}",
-                +([f"OHLC={OHLC}"] if OHLC is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"OHLC={OHLC}"] if OHLC is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -369,8 +346,8 @@ class AlphaVantageAPIHandler:
             function="OVERVIEW",
             request_args=[
                 f"symbol={symbol}",
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -381,8 +358,8 @@ class AlphaVantageAPIHandler:
             function="ETF_PROFILE",
             request_args=[
                 f"symbol={symbol}",
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -393,8 +370,8 @@ class AlphaVantageAPIHandler:
             function="DIVIDENDS",
             request_args=[
                 f"symbol={symbol}",
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -405,8 +382,8 @@ class AlphaVantageAPIHandler:
             function="SPLITS",
             request_args=[
                 f"symbol={symbol}",
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -417,8 +394,8 @@ class AlphaVantageAPIHandler:
             function="INCOME_STATEMENT",
             request_args=[
                 f"symbol={symbol}",
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -429,8 +406,8 @@ class AlphaVantageAPIHandler:
             function="BALANCE_SHEET",
             request_args=[
                 f"symbol={symbol}",
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -441,8 +418,8 @@ class AlphaVantageAPIHandler:
             function="CASH_FLOW",
             request_args=[
                 f"symbol={symbol}",
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -453,8 +430,8 @@ class AlphaVantageAPIHandler:
             function="EARNINGS",
             request_args=[
                 f"symbol={symbol}",
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -463,11 +440,10 @@ class AlphaVantageAPIHandler:
     ) -> Optional[dict[str, any]]:
         return self.send_request(
             function="LISTING_STATUS",
-            request_args=[
-                +([f"date={date}"] if date is None else []),
-                +([f"state={state}"] if state is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            request_args=[]
+            + ([f"date={date}"] if date is not None else [])
+            + ([f"state={state}"] if state is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -480,11 +456,10 @@ class AlphaVantageAPIHandler:
     ) -> Optional[dict[str, any]]:
         return self.send_request(
             function="EARNINGS_CALENDAR",
-            request_args=[
-                +([f"symbol={symbol}"] if symbol is None else []),
-                +([f"horizon={horizon}"] if horizon is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            request_args=[]
+            + ([f"symbol={symbol}"] if symbol is not None else [])
+            + ([f"horizon={horizon}"] if horizon is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -500,8 +475,8 @@ class AlphaVantageAPIHandler:
             request_args=[
                 f"from_currency={from_currency}",
                 f"to_currency={to_currency}",
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -520,9 +495,9 @@ class AlphaVantageAPIHandler:
                 f"from_symbol={from_symbol}",
                 f"to_symbol={to_symbol}",
                 f"interval={interval}",
-                +([f"outputsize={outputsize}"] if outputsize is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"outputsize={outputsize}"] if outputsize is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -539,9 +514,9 @@ class AlphaVantageAPIHandler:
             request_args=[
                 f"from_symbol={from_symbol}",
                 f"to_symbol={to_symbol}",
-                +([f"outputsize={outputsize}"] if outputsize is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"outputsize={outputsize}"] if outputsize is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -557,8 +532,8 @@ class AlphaVantageAPIHandler:
             request_args=[
                 f"from_symbol={from_symbol}",
                 f"to_symbol={to_symbol}",
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -574,8 +549,8 @@ class AlphaVantageAPIHandler:
             request_args=[
                 f"from_symbol={from_symbol}",
                 f"to_symbol={to_symbol}",
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -594,9 +569,9 @@ class AlphaVantageAPIHandler:
                 f"symbol={symbol}",
                 f"market={market}",
                 f"interval={interval}",
-                +([f"outputsize={outputsize}"] if outputsize is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"outputsize={outputsize}"] if outputsize is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -608,8 +583,8 @@ class AlphaVantageAPIHandler:
             request_args=[
                 f"symbol={symbol}",
                 f"market={market}",
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -621,8 +596,8 @@ class AlphaVantageAPIHandler:
             request_args=[
                 f"symbol={symbol}",
                 f"market={market}",
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -634,8 +609,8 @@ class AlphaVantageAPIHandler:
             request_args=[
                 f"symbol={symbol}",
                 f"market={market}",
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -644,10 +619,9 @@ class AlphaVantageAPIHandler:
     ) -> Optional[dict[str, any]]:
         return self.send_request(
             function="WTI",
-            request_args=[
-                +([f"interval={interval}"] if interval is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            request_args=[]
+            + ([f"interval={interval}"] if interval is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -656,10 +630,9 @@ class AlphaVantageAPIHandler:
     ) -> Optional[dict[str, any]]:
         return self.send_request(
             function="BRENT",
-            request_args=[
-                +([f"interval={interval}"] if interval is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            request_args=[]
+            + ([f"interval={interval}"] if interval is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -668,10 +641,9 @@ class AlphaVantageAPIHandler:
     ) -> Optional[dict[str, any]]:
         return self.send_request(
             function="NATURAL_GAS",
-            request_args=[
-                +([f"interval={interval}"] if interval is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            request_args=[]
+            + ([f"interval={interval}"] if interval is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -680,10 +652,9 @@ class AlphaVantageAPIHandler:
     ) -> Optional[dict[str, any]]:
         return self.send_request(
             function="COPPER",
-            request_args=[
-                +([f"interval={interval}"] if interval is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            request_args=[]
+            + ([f"interval={interval}"] if interval is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -692,10 +663,9 @@ class AlphaVantageAPIHandler:
     ) -> Optional[dict[str, any]]:
         return self.send_request(
             function="ALUMINUM",
-            request_args=[
-                +([f"interval={interval}"] if interval is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            request_args=[]
+            + ([f"interval={interval}"] if interval is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -704,10 +674,9 @@ class AlphaVantageAPIHandler:
     ) -> Optional[dict[str, any]]:
         return self.send_request(
             function="WHEAT",
-            request_args=[
-                +([f"interval={interval}"] if interval is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            request_args=[]
+            + ([f"interval={interval}"] if interval is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -716,10 +685,9 @@ class AlphaVantageAPIHandler:
     ) -> Optional[dict[str, any]]:
         return self.send_request(
             function="CORN",
-            request_args=[
-                +([f"interval={interval}"] if interval is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            request_args=[]
+            + ([f"interval={interval}"] if interval is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -728,10 +696,9 @@ class AlphaVantageAPIHandler:
     ) -> Optional[dict[str, any]]:
         return self.send_request(
             function="COTTON",
-            request_args=[
-                +([f"interval={interval}"] if interval is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            request_args=[]
+            + ([f"interval={interval}"] if interval is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -740,10 +707,9 @@ class AlphaVantageAPIHandler:
     ) -> Optional[dict[str, any]]:
         return self.send_request(
             function="SUGAR",
-            request_args=[
-                +([f"interval={interval}"] if interval is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            request_args=[]
+            + ([f"interval={interval}"] if interval is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -752,10 +718,9 @@ class AlphaVantageAPIHandler:
     ) -> Optional[dict[str, any]]:
         return self.send_request(
             function="COFFEE",
-            request_args=[
-                +([f"interval={interval}"] if interval is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            request_args=[]
+            + ([f"interval={interval}"] if interval is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -764,10 +729,9 @@ class AlphaVantageAPIHandler:
     ) -> Optional[dict[str, any]]:
         return self.send_request(
             function="ALL_COMMODITIES",
-            request_args=[
-                +([f"interval={interval}"] if interval is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            request_args=[]
+            + ([f"interval={interval}"] if interval is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -776,10 +740,9 @@ class AlphaVantageAPIHandler:
     ) -> Optional[dict[str, any]]:
         return self.send_request(
             function="REAL_GDP",
-            request_args=[
-                +([f"interval={interval}"] if interval is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            request_args=[]
+            + ([f"interval={interval}"] if interval is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -792,11 +755,10 @@ class AlphaVantageAPIHandler:
     ) -> Optional[dict[str, any]]:
         return self.send_request(
             function="TREASURY_YIELD",
-            request_args=[
-                +([f"interval={interval}"] if interval is None else []),
-                +([f"maturity={maturity}"] if maturity is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            request_args=[]
+            + ([f"interval={interval}"] if interval is not None else [])
+            + ([f"maturity={maturity}"] if maturity is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -805,10 +767,9 @@ class AlphaVantageAPIHandler:
     ) -> Optional[dict[str, any]]:
         return self.send_request(
             function="FEDERAL_FUNDS_RATE",
-            request_args=[
-                +([f"interval={interval}"] if interval is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            request_args=[]
+            + ([f"interval={interval}"] if interval is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -817,10 +778,9 @@ class AlphaVantageAPIHandler:
     ) -> Optional[dict[str, any]]:
         return self.send_request(
             function="CPI",
-            request_args=[
-                +([f"interval={interval}"] if interval is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            request_args=[]
+            + ([f"interval={interval}"] if interval is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -841,9 +801,9 @@ class AlphaVantageAPIHandler:
                 f"interval={interval}",
                 f"time_period={time_period}",
                 f"series_type={series_type}",
-                +([f"month={month}"] if month is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -864,9 +824,9 @@ class AlphaVantageAPIHandler:
                 f"interval={interval}",
                 f"time_period={time_period}",
                 f"series_type={series_type}",
-                +([f"month={month}"] if month is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -887,9 +847,9 @@ class AlphaVantageAPIHandler:
                 f"interval={interval}",
                 f"time_period={time_period}",
                 f"series_type={series_type}",
-                +([f"month={month}"] if month is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -910,9 +870,9 @@ class AlphaVantageAPIHandler:
                 f"interval={interval}",
                 f"time_period={time_period}",
                 f"series_type={series_type}",
-                +([f"month={month}"] if month is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -933,9 +893,9 @@ class AlphaVantageAPIHandler:
                 f"interval={interval}",
                 f"time_period={time_period}",
                 f"series_type={series_type}",
-                +([f"month={month}"] if month is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -956,9 +916,9 @@ class AlphaVantageAPIHandler:
                 f"interval={interval}",
                 f"time_period={time_period}",
                 f"series_type={series_type}",
-                +([f"month={month}"] if month is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -979,9 +939,9 @@ class AlphaVantageAPIHandler:
                 f"interval={interval}",
                 f"time_period={time_period}",
                 f"series_type={series_type}",
-                +([f"month={month}"] if month is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -1002,11 +962,11 @@ class AlphaVantageAPIHandler:
                 f"symbol={symbol}",
                 f"interval={interval}",
                 f"series_type={series_type}",
-                +([f"month={month}"] if month is None else []),
-                +([f"fastlimit={fastlimit}"] if fastlimit is None else []),
-                +([f"slowlimit={slowlimit}"] if slowlimit is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"fastlimit={fastlimit}"] if fastlimit is not None else [])
+            + ([f"slowlimit={slowlimit}"] if slowlimit is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -1023,9 +983,9 @@ class AlphaVantageAPIHandler:
             request_args=[
                 f"symbol={symbol}",
                 f"interval={interval}",
-                +([f"month={month}"] if month is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -1046,9 +1006,9 @@ class AlphaVantageAPIHandler:
                 f"interval={interval}",
                 f"time_period={time_period}",
                 f"series_type={series_type}",
-                +([f"month={month}"] if month is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -1070,12 +1030,12 @@ class AlphaVantageAPIHandler:
                 f"symbol={symbol}",
                 f"interval={interval}",
                 f"series_type={series_type}",
-                +([f"month={month}"] if month is None else []),
-                +([f"fastperiod={fastperiod}"] if fastperiod is None else []),
-                +([f"slowperiod={slowperiod}"] if slowperiod is None else []),
-                +([f"signalperiod={signalperiod}"] if signalperiod is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"fastperiod={fastperiod}"] if fastperiod is not None else [])
+            + ([f"slowperiod={slowperiod}"] if slowperiod is not None else [])
+            + ([f"signalperiod={signalperiod}"] if signalperiod is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -1100,15 +1060,15 @@ class AlphaVantageAPIHandler:
                 f"symbol={symbol}",
                 f"interval={interval}",
                 f"series_type={series_type}",
-                +([f"month={month}"] if month is None else []),
-                +([f"fastperiod={fastperiod}"] if fastperiod is None else []),
-                +([f"slowperiod={slowperiod}"] if slowperiod is None else []),
-                +([f"signalperiod={signalperiod}"] if signalperiod is None else []),
-                +([f"fastmatype={fastmatype}"] if fastmatype is None else []),
-                +([f"slowmatype={slowmatype}"] if slowmatype is None else []),
-                +([f"signalmatype={signalmatype}"] if signalmatype is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"fastperiod={fastperiod}"] if fastperiod is not None else [])
+            + ([f"slowperiod={slowperiod}"] if slowperiod is not None else [])
+            + ([f"signalperiod={signalperiod}"] if signalperiod is not None else [])
+            + ([f"fastmatype={fastmatype}"] if fastmatype is not None else [])
+            + ([f"slowmatype={slowmatype}"] if slowmatype is not None else [])
+            + ([f"signalmatype={signalmatype}"] if signalmatype is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -1130,14 +1090,14 @@ class AlphaVantageAPIHandler:
             request_args=[
                 f"symbol={symbol}",
                 f"interval={interval}",
-                +([f"month={month}"] if month is None else []),
-                +([f"fastkperiod={fastkperiod}"] if fastkperiod is None else []),
-                +([f"slowkperiod={slowkperiod}"] if slowkperiod is None else []),
-                +([f"slowdperiod={slowdperiod}"] if slowdperiod is None else []),
-                +([f"slowkmatype={slowkmatype}"] if slowkmatype is None else []),
-                +([f"slowdmatype={slowdmatype}"] if slowdmatype is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"fastkperiod={fastkperiod}"] if fastkperiod is not None else [])
+            + ([f"slowkperiod={slowkperiod}"] if slowkperiod is not None else [])
+            + ([f"slowdperiod={slowdperiod}"] if slowdperiod is not None else [])
+            + ([f"slowkmatype={slowkmatype}"] if slowkmatype is not None else [])
+            + ([f"slowdmatype={slowdmatype}"] if slowdmatype is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -1157,12 +1117,12 @@ class AlphaVantageAPIHandler:
             request_args=[
                 f"symbol={symbol}",
                 f"interval={interval}",
-                +([f"month={month}"] if month is None else []),
-                +([f"fastkperiod={fastkperiod}"] if fastkperiod is None else []),
-                +([f"fastdperiod={fastdperiod}"] if fastdperiod is None else []),
-                +([f"fastdmatype={fastdmatype}"] if fastdmatype is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"fastkperiod={fastkperiod}"] if fastkperiod is not None else [])
+            + ([f"fastdperiod={fastdperiod}"] if fastdperiod is not None else [])
+            + ([f"fastdmatype={fastdmatype}"] if fastdmatype is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -1183,9 +1143,9 @@ class AlphaVantageAPIHandler:
                 f"interval={interval}",
                 f"time_period={time_period}",
                 f"series_type={series_type}",
-                +([f"month={month}"] if month is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -1209,12 +1169,12 @@ class AlphaVantageAPIHandler:
                 f"interval={interval}",
                 f"time_period={time_period}",
                 f"series_type={series_type}",
-                +([f"month={month}"] if month is None else []),
-                +([f"fastkperiod={fastkperiod}"] if fastkperiod is None else []),
-                +([f"fastdperiod={fastdperiod}"] if fastdperiod is None else []),
-                +([f"fastdmatype={fastdmatype}"] if fastdmatype is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"fastkperiod={fastkperiod}"] if fastkperiod is not None else [])
+            + ([f"fastdperiod={fastdperiod}"] if fastdperiod is not None else [])
+            + ([f"fastdmatype={fastdmatype}"] if fastdmatype is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -1233,9 +1193,9 @@ class AlphaVantageAPIHandler:
                 f"symbol={symbol}",
                 f"interval={interval}",
                 f"time_period={time_period}",
-                +([f"month={month}"] if month is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -1254,9 +1214,9 @@ class AlphaVantageAPIHandler:
                 f"symbol={symbol}",
                 f"interval={interval}",
                 f"time_period={time_period}",
-                +([f"month={month}"] if month is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -1275,9 +1235,9 @@ class AlphaVantageAPIHandler:
                 f"symbol={symbol}",
                 f"interval={interval}",
                 f"time_period={time_period}",
-                +([f"month={month}"] if month is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -1299,12 +1259,12 @@ class AlphaVantageAPIHandler:
                 f"symbol={symbol}",
                 f"interval={interval}",
                 f"series_type={series_type}",
-                +([f"month={month}"] if month is None else []),
-                +([f"fastperiod={fastperiod}"] if fastperiod is None else []),
-                +([f"slowperiod={slowperiod}"] if slowperiod is None else []),
-                +([f"matype={matype}"] if matype is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"fastperiod={fastperiod}"] if fastperiod is not None else [])
+            + ([f"slowperiod={slowperiod}"] if slowperiod is not None else [])
+            + ([f"matype={matype}"] if matype is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -1326,12 +1286,12 @@ class AlphaVantageAPIHandler:
                 f"symbol={symbol}",
                 f"interval={interval}",
                 f"series_type={series_type}",
-                +([f"month={month}"] if month is None else []),
-                +([f"fastperiod={fastperiod}"] if fastperiod is None else []),
-                +([f"slowperiod={slowperiod}"] if slowperiod is None else []),
-                +([f"matype={matype}"] if matype is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"fastperiod={fastperiod}"] if fastperiod is not None else [])
+            + ([f"slowperiod={slowperiod}"] if slowperiod is not None else [])
+            + ([f"matype={matype}"] if matype is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -1352,9 +1312,9 @@ class AlphaVantageAPIHandler:
                 f"interval={interval}",
                 f"time_period={time_period}",
                 f"series_type={series_type}",
-                +([f"month={month}"] if month is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -1371,9 +1331,9 @@ class AlphaVantageAPIHandler:
             request_args=[
                 f"symbol={symbol}",
                 f"interval={interval}",
-                +([f"month={month}"] if month is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -1392,9 +1352,9 @@ class AlphaVantageAPIHandler:
                 f"symbol={symbol}",
                 f"interval={interval}",
                 f"time_period={time_period}",
-                +([f"month={month}"] if month is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -1415,9 +1375,9 @@ class AlphaVantageAPIHandler:
                 f"interval={interval}",
                 f"time_period={time_period}",
                 f"series_type={series_type}",
-                +([f"month={month}"] if month is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -1438,9 +1398,9 @@ class AlphaVantageAPIHandler:
                 f"interval={interval}",
                 f"time_period={time_period}",
                 f"series_type={series_type}",
-                +([f"month={month}"] if month is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -1461,9 +1421,9 @@ class AlphaVantageAPIHandler:
                 f"interval={interval}",
                 f"time_period={time_period}",
                 f"series_type={series_type}",
-                +([f"month={month}"] if month is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -1482,9 +1442,9 @@ class AlphaVantageAPIHandler:
                 f"symbol={symbol}",
                 f"interval={interval}",
                 f"time_period={time_period}",
-                +([f"month={month}"] if month is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -1503,9 +1463,9 @@ class AlphaVantageAPIHandler:
                 f"symbol={symbol}",
                 f"interval={interval}",
                 f"time_period={time_period}",
-                +([f"month={month}"] if month is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -1524,9 +1484,9 @@ class AlphaVantageAPIHandler:
                 f"symbol={symbol}",
                 f"interval={interval}",
                 f"time_period={time_period}",
-                +([f"month={month}"] if month is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -1547,9 +1507,9 @@ class AlphaVantageAPIHandler:
                 f"interval={interval}",
                 f"time_period={time_period}",
                 f"series_type={series_type}",
-                +([f"month={month}"] if month is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -1569,12 +1529,12 @@ class AlphaVantageAPIHandler:
             request_args=[
                 f"symbol={symbol}",
                 f"interval={interval}",
-                +([f"month={month}"] if month is None else []),
-                +([f"timeperiod1={timeperiod1}"] if timeperiod1 is None else []),
-                +([f"timeperiod2={timeperiod2}"] if timeperiod2 is None else []),
-                +([f"timeperiod3={timeperiod3}"] if timeperiod3 is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"timeperiod1={timeperiod1}"] if timeperiod1 is not None else [])
+            + ([f"timeperiod2={timeperiod2}"] if timeperiod2 is not None else [])
+            + ([f"timeperiod3={timeperiod3}"] if timeperiod3 is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -1593,9 +1553,9 @@ class AlphaVantageAPIHandler:
                 f"symbol={symbol}",
                 f"interval={interval}",
                 f"time_period={time_period}",
-                +([f"month={month}"] if month is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -1614,9 +1574,9 @@ class AlphaVantageAPIHandler:
                 f"symbol={symbol}",
                 f"interval={interval}",
                 f"time_period={time_period}",
-                +([f"month={month}"] if month is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -1635,9 +1595,9 @@ class AlphaVantageAPIHandler:
                 f"symbol={symbol}",
                 f"interval={interval}",
                 f"time_period={time_period}",
-                +([f"month={month}"] if month is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -1656,9 +1616,9 @@ class AlphaVantageAPIHandler:
                 f"symbol={symbol}",
                 f"interval={interval}",
                 f"time_period={time_period}",
-                +([f"month={month}"] if month is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -1677,9 +1637,9 @@ class AlphaVantageAPIHandler:
                 f"symbol={symbol}",
                 f"interval={interval}",
                 f"time_period={time_period}",
-                +([f"month={month}"] if month is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -1703,12 +1663,12 @@ class AlphaVantageAPIHandler:
                 f"interval={interval}",
                 f"time_period={time_period}",
                 f"series_type={series_type}",
-                +([f"month={month}"] if month is None else []),
-                +([f"nbdevup={nbdevup}"] if nbdevup is None else []),
-                +([f"nbdevdn={nbdevdn}"] if nbdevdn is None else []),
-                +([f"matype={matype}"] if matype is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"nbdevup={nbdevup}"] if nbdevup is not None else [])
+            + ([f"nbdevdn={nbdevdn}"] if nbdevdn is not None else [])
+            + ([f"matype={matype}"] if matype is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -1729,9 +1689,9 @@ class AlphaVantageAPIHandler:
                 f"interval={interval}",
                 f"time_period={time_period}",
                 f"series_type={series_type}",
-                +([f"month={month}"] if month is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -1750,9 +1710,9 @@ class AlphaVantageAPIHandler:
                 f"symbol={symbol}",
                 f"interval={interval}",
                 f"time_period={time_period}",
-                +([f"month={month}"] if month is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -1771,11 +1731,11 @@ class AlphaVantageAPIHandler:
             request_args=[
                 f"symbol={symbol}",
                 f"interval={interval}",
-                +([f"month={month}"] if month is None else []),
-                +([f"acceleration={acceleration}"] if acceleration is None else []),
-                +([f"maximum={maximum}"] if maximum is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"acceleration={acceleration}"] if acceleration is not None else [])
+            + ([f"maximum={maximum}"] if maximum is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -1792,9 +1752,9 @@ class AlphaVantageAPIHandler:
             request_args=[
                 f"symbol={symbol}",
                 f"interval={interval}",
-                +([f"month={month}"] if month is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -1813,9 +1773,9 @@ class AlphaVantageAPIHandler:
                 f"symbol={symbol}",
                 f"interval={interval}",
                 f"time_period={time_period}",
-                +([f"month={month}"] if month is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -1834,9 +1794,9 @@ class AlphaVantageAPIHandler:
                 f"symbol={symbol}",
                 f"interval={interval}",
                 f"time_period={time_period}",
-                +([f"month={month}"] if month is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -1853,9 +1813,9 @@ class AlphaVantageAPIHandler:
             request_args=[
                 f"symbol={symbol}",
                 f"interval={interval}",
-                +([f"month={month}"] if month is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -1874,11 +1834,11 @@ class AlphaVantageAPIHandler:
             request_args=[
                 f"symbol={symbol}",
                 f"interval={interval}",
-                +([f"month={month}"] if month is None else []),
-                +([f"fastperiod={fastperiod}"] if fastperiod is None else []),
-                +([f"slowperiod={slowperiod}"] if slowperiod is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"fastperiod={fastperiod}"] if fastperiod is not None else [])
+            + ([f"slowperiod={slowperiod}"] if slowperiod is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -1895,9 +1855,9 @@ class AlphaVantageAPIHandler:
             request_args=[
                 f"symbol={symbol}",
                 f"interval={interval}",
-                +([f"month={month}"] if month is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -1916,9 +1876,9 @@ class AlphaVantageAPIHandler:
                 f"symbol={symbol}",
                 f"interval={interval}",
                 f"series_type={series_type}",
-                +([f"month={month}"] if month is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -1937,9 +1897,9 @@ class AlphaVantageAPIHandler:
                 f"symbol={symbol}",
                 f"interval={interval}",
                 f"series_type={series_type}",
-                +([f"month={month}"] if month is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -1958,9 +1918,9 @@ class AlphaVantageAPIHandler:
                 f"symbol={symbol}",
                 f"interval={interval}",
                 f"series_type={series_type}",
-                +([f"month={month}"] if month is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -1979,9 +1939,9 @@ class AlphaVantageAPIHandler:
                 f"symbol={symbol}",
                 f"interval={interval}",
                 f"series_type={series_type}",
-                +([f"month={month}"] if month is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -2000,9 +1960,9 @@ class AlphaVantageAPIHandler:
                 f"symbol={symbol}",
                 f"interval={interval}",
                 f"series_type={series_type}",
-                +([f"month={month}"] if month is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
 
@@ -2021,8 +1981,84 @@ class AlphaVantageAPIHandler:
                 f"symbol={symbol}",
                 f"interval={interval}",
                 f"series_type={series_type}",
-                +([f"month={month}"] if month is None else []),
-                +([f"datatype={datatype}"] if datatype != "json" else []),
-            ],
+            ]
+            + ([f"month={month}"] if month is not None else [])
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
+            **kwargs,
+        )
+
+    def get_analytics_fixed_window(self, *args, **kwargs) -> None:
+        raise NotImplementedError(
+            "The multiple RANGE argument is currently not supported!"
+        )
+
+    def get_global_quote(
+        self, symbol, datatype: Literal["json", "csv"] = "json", **kwargs
+    ) -> Optional[dict[str, any]]:
+        return self.send_request(
+            function="GLOBAL_QUOTE",
+            request_args=[
+                f"symbol={symbol}",
+            ]
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
+        )
+
+    def get_market_status(self, **kwargs) -> Optional[dict[str, any]]:
+        return self.send_request(function="MARKET_STATUS", **kwargs)
+
+    def get_top_gainers_losers(self, **kwargs) -> Optional[dict[str, any]]:
+        return self.send_request(function="TOP_GAINERS_LOSERS", **kwargs)
+
+    def get_real_gdp_per_capita(
+        self, datatype: Literal["json", "csv"] = "json", **kwargs
+    ) -> Optional[dict[str, any]]:
+        return self.send_request(
+            function="REAL_GDP_PER_CAPITA",
+            request_args=[] + ([f"datatype={datatype}"] if datatype != "json" else []),
+            **kwargs,
+        )
+
+    def get_inflation(
+        self, datatype: Literal["json", "csv"] = "json", **kwargs
+    ) -> Optional[dict[str, any]]:
+        return self.send_request(
+            function="INFLATION",
+            request_args=[] + ([f"datatype={datatype}"] if datatype != "json" else []),
+            **kwargs,
+        )
+
+    def get_retail_sales(
+        self, datatype: Literal["json", "csv"] = "json", **kwargs
+    ) -> Optional[dict[str, any]]:
+        return self.send_request(
+            function="RETAIL_SALES",
+            request_args=[] + ([f"datatype={datatype}"] if datatype != "json" else []),
+            **kwargs,
+        )
+
+    def get_durables(
+        self, datatype: Literal["json", "csv"] = "json", **kwargs
+    ) -> Optional[dict[str, any]]:
+        return self.send_request(
+            function="DURABLES",
+            request_args=[] + ([f"datatype={datatype}"] if datatype != "json" else []),
+            **kwargs,
+        )
+
+    def get_unemployment(
+        self, datatype: Literal["json", "csv"] = "json", **kwargs
+    ) -> Optional[dict[str, any]]:
+        return self.send_request(
+            function="UNEMPLOYMENT",
+            request_args=[] + ([f"datatype={datatype}"] if datatype != "json" else []),
+            **kwargs,
+        )
+
+    def get_nonfarm_payroll(
+        self, datatype: Literal["json", "csv"] = "json", **kwargs
+    ) -> Optional[dict[str, any]]:
+        return self.send_request(
+            function="NONFARM_PAYROLL",
+            request_args=[] + ([f"datatype={datatype}"] if datatype != "json" else []),
             **kwargs,
         )
