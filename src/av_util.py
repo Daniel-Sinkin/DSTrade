@@ -19,6 +19,16 @@ def get_utc_timestamp_ms() -> int:
     return int(dt.datetime.now(tz=dt.timezone.utc).timestamp() * 1000)
 
 
+class AV_DATA_CANDLE(TypedDict, total=False):
+    __annotations__ = {
+        "1. open": str,
+        "2. high": str,
+        "3. low": str,
+        "4. close": str,
+        "5. volume": str,
+    }
+
+
 class AV_SYMBOL(StrEnum):
     AAPL = "AAPL"
     IBM = "IBM"
@@ -38,6 +48,8 @@ class AV_CANDLE_TF(StrEnum):
     MIN30 = "30min"
     HOUR = "60min"
     DAY = "1day"
+    WEEKLY = "1week"
+    MONTHLY = "1month"
 
 
 class AV_CURRENCY(StrEnum):  # As of 2024-11-29

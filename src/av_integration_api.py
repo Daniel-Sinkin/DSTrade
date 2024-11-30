@@ -54,7 +54,7 @@ def format_byte_size(n_bytes: int) -> str:
 
 
 class AlphaVantageAPIHandler:
-    def __init__(self, api_key: str):
+    def __init__(self, api_key: str = "demo"):
         self.api_key = api_key
         self.url_base = "https://www.alphavantage.co/"
         self.url_request = self.url_base + "query?"
