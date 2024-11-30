@@ -38,7 +38,7 @@ def main() -> None:
 
     handler_name = "handler"
     filename = "test_av_integration_api.py"
-    test_av_integration = f"from src.av_integration import AlphaVantageAPIHandler\n\n{handler_name}=AlphaVantageAPIHandler(api_key='demo')\n"
+    test_av_integration = f"from src.av_integration_api import AlphaVantageAPIHandler\n\n{handler_name}=AlphaVantageAPIHandler(api_key='demo')\n"
     for func, args in examples.items():
         test_av_integration += f"def test_get_{func.lower()}() -> None:\n"
         for arg in args:
@@ -54,13 +54,13 @@ def main() -> None:
                     seen_keys.add(arg_key)
                 lst.append(f'{arg_key}="{arg_val}"')
             arg = [f'"{a}"' for a in arg]
-            test_av_integration += f"    assert {handler_name}._get_{func.lower()}({', '.join(lst)}) is not None\n"
+            test_av_integration += f"    assert {handler_name}.get_{func.lower()}({', '.join(lst)}) is not None\n"
         test_av_integration += "\n"
     test_av_integration += (
         "    def get_analytics_fixed_window(self, *args, **kwargs) -> None: ..."
     )
 
-    with open(Path("tests").joinpath(filename), "w") as file:
+    with open(Path("util").joinpath(filename), "w") as file:
         file.write(test_av_integration)
 
 

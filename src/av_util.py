@@ -2,6 +2,22 @@ from enum import StrEnum
 from typing import TypedDict
 
 
+def obfuscate_api_key(api_key: str) -> str:
+    if api_key == "demo":  # Don't have to obfuscate demo account
+        return api_key
+
+    return api_key[:2] + "..." + api_key[-2:]
+
+
+def obfuscate_request_url(request_url: str, api_key: str) -> str:
+    first_part = request_url.split("&apikey=")[0]
+    return first_part + f"&apikey={obfuscate_api_key(api_key)}"
+
+
+def get_utc_timestamp_ms() -> int:
+    return int(dt.datetime.now(tz=dt.timezone.utc).timestamp() * 1000)
+
+
 class AV_SYMBOL(StrEnum):
     AAPL = "AAPL"
     IBM = "IBM"
@@ -20,6 +36,7 @@ class AV_CANDLE_TF(StrEnum):
     MIN15 = "15min"
     MIN30 = "30min"
     HOUR = "60min"
+    DAY = "1day"
 
 
 class AV_CURRENCY(StrEnum):  # As of 2024-11-29

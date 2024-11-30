@@ -103,7 +103,7 @@ def main() -> None:
                 req_args_optional += "\n"
 
         args_required = f"""
-    def _get_{k.lower()}(
+    def get_{k.lower()}(
         self,
     {args_required}
     {args_optional}
@@ -124,14 +124,14 @@ def main() -> None:
 
     av_integration_py += "\n"
     av_integration_py += (
-        "    def _get_analytics_fixed_window(self, *args, **kwargs) -> None:\n"
+        "    def get_analytics_fixed_window(self, *args, **kwargs) -> None:\n"
     )
     av_integration_py += "        raise NotImplementedError('The multiple RANGE argument is currently not supported!')\n"
     av_integration_py += "\n"
 
     # Either no arguments at all (not automatically supported), or function not given in documentation
     av_integration_py += """
-    def _get_global_quote(
+    def get_global_quote(
         self,
         symbol,
         datatype: Literal[\"json\", \"csv\"] = \"json\",
@@ -145,7 +145,7 @@ def main() -> None:
             + ([f"datatype={datatype}"] if datatype != "json" else []),
         )
     
-    def _get_market_status(
+    def get_market_status(
         self,
         **kwargs
     ) -> Optional[dict[str, any]]:
@@ -154,7 +154,7 @@ def main() -> None:
             **kwargs
         ) 
     
-    def _get_top_gainers_losers(
+    def get_top_gainers_losers(
         self,
         **kwargs
     ) -> Optional[dict[str, any]]:
@@ -163,7 +163,7 @@ def main() -> None:
             **kwargs
         ) 
 
-    def _get_real_gdp_per_capita(
+    def get_real_gdp_per_capita(
         self,
         datatype: Literal[\"json\", \"csv\"] = \"json\",
         **kwargs
@@ -175,7 +175,7 @@ def main() -> None:
             **kwargs
         ) 
     
-    def _get_inflation(
+    def get_inflation(
         self,
         datatype: Literal[\"json\", \"csv\"] = \"json\",
         **kwargs
@@ -187,7 +187,7 @@ def main() -> None:
             **kwargs
         ) 
     
-    def _get_retail_sales(
+    def get_retail_sales(
         self,
         datatype: Literal[\"json\", \"csv\"] = \"json\",
         **kwargs
@@ -200,7 +200,7 @@ def main() -> None:
         ) 
     
             
-    def _get_durables(
+    def get_durables(
         self,
         datatype: Literal[\"json\", \"csv\"] = \"json\",
         **kwargs
@@ -213,7 +213,7 @@ def main() -> None:
         ) 
     
                     
-    def _get_unemployment(
+    def get_unemployment(
         self,
         datatype: Literal[\"json\", \"csv\"] = \"json\",
         **kwargs
@@ -226,7 +226,7 @@ def main() -> None:
         ) 
     
                             
-    def _get_nonfarm_payroll(
+    def get_nonfarm_payroll(
         self,
         datatype: Literal[\"json\", \"csv\"] = \"json\",
         **kwargs
@@ -242,7 +242,7 @@ def main() -> None:
     num_hardcoded = 9
     print(f"Generating {len(grouped_dict) + num_hardcoded} api functions.")
     print("Saving to file.")
-    with open(Path("src").joinpath("av_integration_api.py"), "w") as file:
+    with open(Path("util").joinpath("av_integration_api.py"), "w") as file:
         file.write(av_integration_py)
 
 

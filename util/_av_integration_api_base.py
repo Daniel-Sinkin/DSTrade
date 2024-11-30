@@ -42,6 +42,17 @@ def get_utc_timestamp_ms() -> int:
     return int(dt.datetime.now(tz=dt.timezone.utc).timestamp() * 1000)
 
 
+def format_byte_size(n_bytes: int) -> str:
+    if n_bytes >= 1024**3:
+        return f"{n_bytes/(1024**3):.2f} GByte"
+    elif n_bytes >= 1024**2:
+        return f"{n_bytes/(1024**2):.2f} MByte"
+    elif n_bytes >= 1024:
+        return f"{n_bytes/(1024):.2f} KByte"
+    else:
+        return f"{n_bytes:.2f} KByte"
+
+
 class AlphaVantageAPIHandler:
     def __init__(self, api_key: str):
         self.api_key = api_key
@@ -79,6 +90,11 @@ class AlphaVantageAPIHandler:
         except Exception as e:
             self.logger.error(f"Request got generic error '{e}'")
             return None
+        payload_size = len(response.content)
+        self.logger.debug(
+            f"'{function}' Payload size: {format_byte_size(payload_size)}."
+        )
+
         response_data: dict[str, any] = response.json()
 
         if save_result:

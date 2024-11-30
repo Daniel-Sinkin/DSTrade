@@ -9,7 +9,7 @@ import pandas as pd
 import requests
 from dotenv import load_dotenv
 
-from .av_constants import (
+from .av_util import (
     AV_CANDLE_TF,
     AV_CURRENCY,
     AV_CURRENCY_DIGITAL,

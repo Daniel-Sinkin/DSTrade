@@ -42,6 +42,17 @@ def get_utc_timestamp_ms() -> int:
     return int(dt.datetime.now(tz=dt.timezone.utc).timestamp() * 1000)
 
 
+def format_byte_size(n_bytes: int) -> str:
+    if n_bytes >= 1024**3:
+        return f"{n_bytes/(1024**3):.2f} GByte"
+    elif n_bytes >= 1024**2:
+        return f"{n_bytes/(1024**2):.2f} MByte"
+    elif n_bytes >= 1024:
+        return f"{n_bytes/(1024):.2f} KByte"
+    else:
+        return f"{n_bytes:.2f} KByte"
+
+
 class AlphaVantageAPIHandler:
     def __init__(self, api_key: str):
         self.api_key = api_key
@@ -79,6 +90,11 @@ class AlphaVantageAPIHandler:
         except Exception as e:
             self.logger.error(f"Request got generic error '{e}'")
             return None
+        payload_size = len(response.content)
+        self.logger.debug(
+            f"'{function}' Payload size: {format_byte_size(payload_size)}."
+        )
+
         response_data: dict[str, any] = response.json()
 
         if save_result:
@@ -107,181 +123,218 @@ class AlphaVantageAPIHandler:
 
         return response_data
 
-    def _get_time_series_intraday(
+    def get_time_series_intraday(
         self,
         symbol,
-        interval,
+    interval,
         adjusted=None,
-        extended_hours=None,
-        month=None,
-        outputsize=None,
+    extended_hours=None,
+    month=None,
+    outputsize=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="TIME_SERIES_INTRADAY",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
+            f"symbol={symbol}",
+            f"interval={interval}",
             ]
             + ([f"adjusted={adjusted}"] if adjusted is not None else [])
-            + (
-                [f"extended_hours={extended_hours}"]
-                if extended_hours is not None
-                else []
-            )
+            + ([f"extended_hours={extended_hours}"] if extended_hours is not None else [])
             + ([f"month={month}"] if month is not None else [])
             + ([f"outputsize={outputsize}"] if outputsize is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_time_series_daily(
+    
+    def get_time_series_daily(
         self,
         symbol,
         outputsize=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="TIME_SERIES_DAILY",
             request_args=[
-                f"symbol={symbol}",
+            f"symbol={symbol}",
             ]
             + ([f"outputsize={outputsize}"] if outputsize is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_time_series_daily_adjusted(
+    
+    def get_time_series_daily_adjusted(
         self,
         symbol,
         outputsize=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="TIME_SERIES_DAILY_ADJUSTED",
             request_args=[
-                f"symbol={symbol}",
+            f"symbol={symbol}",
             ]
             + ([f"outputsize={outputsize}"] if outputsize is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_time_series_weekly(
-        self, symbol, datatype: Literal["json", "csv"] = "json", **kwargs
+    
+    def get_time_series_weekly(
+        self,
+        symbol,
+    
+        datatype: Literal["json", "csv"] = "json",
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="TIME_SERIES_WEEKLY",
             request_args=[
-                f"symbol={symbol}",
+            f"symbol={symbol}",
             ]
-            + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
-        )
 
-    def _get_time_series_weekly_adjusted(
-        self, symbol, datatype: Literal["json", "csv"] = "json", **kwargs
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
+            **kwargs
+        )
+    
+    def get_time_series_weekly_adjusted(
+        self,
+        symbol,
+    
+        datatype: Literal["json", "csv"] = "json",
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="TIME_SERIES_WEEKLY_ADJUSTED",
             request_args=[
-                f"symbol={symbol}",
+            f"symbol={symbol}",
             ]
-            + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
-        )
 
-    def _get_time_series_monthly(
-        self, symbol, datatype: Literal["json", "csv"] = "json", **kwargs
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
+            **kwargs
+        )
+    
+    def get_time_series_monthly(
+        self,
+        symbol,
+    
+        datatype: Literal["json", "csv"] = "json",
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="TIME_SERIES_MONTHLY",
             request_args=[
-                f"symbol={symbol}",
+            f"symbol={symbol}",
             ]
-            + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
-        )
 
-    def _get_time_series_monthly_adjusted(
-        self, symbol, datatype: Literal["json", "csv"] = "json", **kwargs
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
+            **kwargs
+        )
+    
+    def get_time_series_monthly_adjusted(
+        self,
+        symbol,
+    
+        datatype: Literal["json", "csv"] = "json",
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="TIME_SERIES_MONTHLY_ADJUSTED",
             request_args=[
-                f"symbol={symbol}",
+            f"symbol={symbol}",
             ]
-            + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
-        )
 
-    def _get_realtime_bulk_quotes(
-        self, symbol, datatype: Literal["json", "csv"] = "json", **kwargs
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
+            **kwargs
+        )
+    
+    def get_realtime_bulk_quotes(
+        self,
+        symbol,
+    
+        datatype: Literal["json", "csv"] = "json",
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="REALTIME_BULK_QUOTES",
             request_args=[
-                f"symbol={symbol}",
+            f"symbol={symbol}",
             ]
-            + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
-        )
 
-    def _get_symbol_search(
-        self, keywords, datatype: Literal["json", "csv"] = "json", **kwargs
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
+            **kwargs
+        )
+    
+    def get_symbol_search(
+        self,
+        keywords,
+    
+        datatype: Literal["json", "csv"] = "json",
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="SYMBOL_SEARCH",
             request_args=[
-                f"keywords={keywords}",
+            f"keywords={keywords}",
             ]
-            + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
-        )
 
-    def _get_realtime_options(
-        self, symbol, contract=None, datatype: Literal["json", "csv"] = "json", **kwargs
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
+            **kwargs
+        )
+    
+    def get_realtime_options(
+        self,
+        symbol,
+        contract=None,
+        datatype: Literal["json", "csv"] = "json",
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="REALTIME_OPTIONS",
             request_args=[
-                f"symbol={symbol}",
+            f"symbol={symbol}",
             ]
             + ([f"contract={contract}"] if contract is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_historical_options(
-        self, symbol, date=None, datatype: Literal["json", "csv"] = "json", **kwargs
+    
+    def get_historical_options(
+        self,
+        symbol,
+        date=None,
+        datatype: Literal["json", "csv"] = "json",
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="HISTORICAL_OPTIONS",
             request_args=[
-                f"symbol={symbol}",
+            f"symbol={symbol}",
             ]
             + ([f"date={date}"] if date is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_news_sentiment(
+    
+    def get_news_sentiment(
         self,
+    
         tickers=None,
-        topics=None,
-        time_from=None,
-        time_to=None,
-        sort=None,
-        limit=None,
+    topics=None,
+    time_from=None,
+    time_to=None,
+    sort=None,
+    limit=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="NEWS_SENTIMENT",
-            request_args=[]
+            request_args=[
+
+            ]
             + ([f"tickers={tickers}"] if tickers is not None else [])
             + ([f"topics={topics}"] if topics is not None else [])
             + ([f"time_from={time_from}"] if time_from is not None else [])
@@ -289,767 +342,933 @@ class AlphaVantageAPIHandler:
             + ([f"sort={sort}"] if sort is not None else [])
             + ([f"limit={limit}"] if limit is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_insider_transactions(
-        self, symbol, datatype: Literal["json", "csv"] = "json", **kwargs
+    
+    def get_insider_transactions(
+        self,
+        symbol,
+    
+        datatype: Literal["json", "csv"] = "json",
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="INSIDER_TRANSACTIONS",
             request_args=[
-                f"symbol={symbol}",
+            f"symbol={symbol}",
             ]
-            + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
-        )
 
-    def _get_analytics_sliding_window(
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
+            **kwargs
+        )
+    
+    def get_analytics_sliding_window(
         self,
         SYMBOLS,
-        RANGE,
-        INTERVAL,
-        WINDOW_SIZE,
-        CALCULATIONS,
+    RANGE,
+    INTERVAL,
+    WINDOW_SIZE,
+    CALCULATIONS,
         OHLC=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="ANALYTICS_SLIDING_WINDOW",
             request_args=[
-                f"SYMBOLS={SYMBOLS}",
-                f"RANGE={RANGE}",
-                f"INTERVAL={INTERVAL}",
-                f"WINDOW_SIZE={WINDOW_SIZE}",
-                f"CALCULATIONS={CALCULATIONS}",
+            f"SYMBOLS={SYMBOLS}",
+            f"RANGE={RANGE}",
+            f"INTERVAL={INTERVAL}",
+            f"WINDOW_SIZE={WINDOW_SIZE}",
+            f"CALCULATIONS={CALCULATIONS}",
             ]
             + ([f"OHLC={OHLC}"] if OHLC is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_overview(
-        self, symbol, datatype: Literal["json", "csv"] = "json", **kwargs
+    
+    def get_overview(
+        self,
+        symbol,
+    
+        datatype: Literal["json", "csv"] = "json",
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="OVERVIEW",
             request_args=[
-                f"symbol={symbol}",
+            f"symbol={symbol}",
             ]
-            + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
-        )
 
-    def _get_etf_profile(
-        self, symbol, datatype: Literal["json", "csv"] = "json", **kwargs
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
+            **kwargs
+        )
+    
+    def get_etf_profile(
+        self,
+        symbol,
+    
+        datatype: Literal["json", "csv"] = "json",
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="ETF_PROFILE",
             request_args=[
-                f"symbol={symbol}",
+            f"symbol={symbol}",
             ]
-            + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
-        )
 
-    def _get_dividends(
-        self, symbol, datatype: Literal["json", "csv"] = "json", **kwargs
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
+            **kwargs
+        )
+    
+    def get_dividends(
+        self,
+        symbol,
+    
+        datatype: Literal["json", "csv"] = "json",
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="DIVIDENDS",
             request_args=[
-                f"symbol={symbol}",
+            f"symbol={symbol}",
             ]
-            + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
-        )
 
-    def _get_splits(
-        self, symbol, datatype: Literal["json", "csv"] = "json", **kwargs
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
+            **kwargs
+        )
+    
+    def get_splits(
+        self,
+        symbol,
+    
+        datatype: Literal["json", "csv"] = "json",
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="SPLITS",
             request_args=[
-                f"symbol={symbol}",
+            f"symbol={symbol}",
             ]
-            + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
-        )
 
-    def _get_income_statement(
-        self, symbol, datatype: Literal["json", "csv"] = "json", **kwargs
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
+            **kwargs
+        )
+    
+    def get_income_statement(
+        self,
+        symbol,
+    
+        datatype: Literal["json", "csv"] = "json",
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="INCOME_STATEMENT",
             request_args=[
-                f"symbol={symbol}",
+            f"symbol={symbol}",
             ]
-            + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
-        )
 
-    def _get_balance_sheet(
-        self, symbol, datatype: Literal["json", "csv"] = "json", **kwargs
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
+            **kwargs
+        )
+    
+    def get_balance_sheet(
+        self,
+        symbol,
+    
+        datatype: Literal["json", "csv"] = "json",
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="BALANCE_SHEET",
             request_args=[
-                f"symbol={symbol}",
+            f"symbol={symbol}",
             ]
-            + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
-        )
 
-    def _get_cash_flow(
-        self, symbol, datatype: Literal["json", "csv"] = "json", **kwargs
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
+            **kwargs
+        )
+    
+    def get_cash_flow(
+        self,
+        symbol,
+    
+        datatype: Literal["json", "csv"] = "json",
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="CASH_FLOW",
             request_args=[
-                f"symbol={symbol}",
+            f"symbol={symbol}",
             ]
-            + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
-        )
 
-    def _get_earnings(
-        self, symbol, datatype: Literal["json", "csv"] = "json", **kwargs
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
+            **kwargs
+        )
+    
+    def get_earnings(
+        self,
+        symbol,
+    
+        datatype: Literal["json", "csv"] = "json",
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="EARNINGS",
             request_args=[
-                f"symbol={symbol}",
+            f"symbol={symbol}",
             ]
-            + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
-        )
 
-    def _get_listing_status(
-        self, date=None, state=None, datatype: Literal["json", "csv"] = "json", **kwargs
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
+            **kwargs
+        )
+    
+    def get_listing_status(
+        self,
+    
+        date=None,
+    state=None,
+        datatype: Literal["json", "csv"] = "json",
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="LISTING_STATUS",
-            request_args=[]
+            request_args=[
+
+            ]
             + ([f"date={date}"] if date is not None else [])
             + ([f"state={state}"] if state is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_earnings_calendar(
+    
+    def get_earnings_calendar(
         self,
+    
         symbol=None,
-        horizon=None,
+    horizon=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="EARNINGS_CALENDAR",
-            request_args=[]
+            request_args=[
+
+            ]
             + ([f"symbol={symbol}"] if symbol is not None else [])
             + ([f"horizon={horizon}"] if horizon is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_currency_exchange_rate(
+    
+    def get_currency_exchange_rate(
         self,
         from_currency,
-        to_currency,
+    to_currency,
+    
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="CURRENCY_EXCHANGE_RATE",
             request_args=[
-                f"from_currency={from_currency}",
-                f"to_currency={to_currency}",
+            f"from_currency={from_currency}",
+            f"to_currency={to_currency}",
             ]
-            + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
-        )
 
-    def _get_fx_intraday(
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
+            **kwargs
+        )
+    
+    def get_fx_intraday(
         self,
         from_symbol,
-        to_symbol,
-        interval,
+    to_symbol,
+    interval,
         outputsize=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="FX_INTRADAY",
             request_args=[
-                f"from_symbol={from_symbol}",
-                f"to_symbol={to_symbol}",
-                f"interval={interval}",
+            f"from_symbol={from_symbol}",
+            f"to_symbol={to_symbol}",
+            f"interval={interval}",
             ]
             + ([f"outputsize={outputsize}"] if outputsize is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_fx_daily(
+    
+    def get_fx_daily(
         self,
         from_symbol,
-        to_symbol,
+    to_symbol,
         outputsize=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="FX_DAILY",
             request_args=[
-                f"from_symbol={from_symbol}",
-                f"to_symbol={to_symbol}",
+            f"from_symbol={from_symbol}",
+            f"to_symbol={to_symbol}",
             ]
             + ([f"outputsize={outputsize}"] if outputsize is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_fx_weekly(
+    
+    def get_fx_weekly(
         self,
         from_symbol,
-        to_symbol,
+    to_symbol,
+    
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="FX_WEEKLY",
             request_args=[
-                f"from_symbol={from_symbol}",
-                f"to_symbol={to_symbol}",
+            f"from_symbol={from_symbol}",
+            f"to_symbol={to_symbol}",
             ]
-            + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
-        )
 
-    def _get_fx_monthly(
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
+            **kwargs
+        )
+    
+    def get_fx_monthly(
         self,
         from_symbol,
-        to_symbol,
+    to_symbol,
+    
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="FX_MONTHLY",
             request_args=[
-                f"from_symbol={from_symbol}",
-                f"to_symbol={to_symbol}",
+            f"from_symbol={from_symbol}",
+            f"to_symbol={to_symbol}",
             ]
-            + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
-        )
 
-    def _get_crypto_intraday(
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
+            **kwargs
+        )
+    
+    def get_crypto_intraday(
         self,
         symbol,
-        market,
-        interval,
+    market,
+    interval,
         outputsize=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="CRYPTO_INTRADAY",
             request_args=[
-                f"symbol={symbol}",
-                f"market={market}",
-                f"interval={interval}",
+            f"symbol={symbol}",
+            f"market={market}",
+            f"interval={interval}",
             ]
             + ([f"outputsize={outputsize}"] if outputsize is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_digital_currency_daily(
-        self, symbol, market, datatype: Literal["json", "csv"] = "json", **kwargs
+    
+    def get_digital_currency_daily(
+        self,
+        symbol,
+    market,
+    
+        datatype: Literal["json", "csv"] = "json",
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="DIGITAL_CURRENCY_DAILY",
             request_args=[
-                f"symbol={symbol}",
-                f"market={market}",
+            f"symbol={symbol}",
+            f"market={market}",
             ]
-            + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
-        )
 
-    def _get_digital_currency_weekly(
-        self, symbol, market, datatype: Literal["json", "csv"] = "json", **kwargs
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
+            **kwargs
+        )
+    
+    def get_digital_currency_weekly(
+        self,
+        symbol,
+    market,
+    
+        datatype: Literal["json", "csv"] = "json",
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="DIGITAL_CURRENCY_WEEKLY",
             request_args=[
-                f"symbol={symbol}",
-                f"market={market}",
+            f"symbol={symbol}",
+            f"market={market}",
             ]
-            + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
-        )
 
-    def _get_digital_currency_monthly(
-        self, symbol, market, datatype: Literal["json", "csv"] = "json", **kwargs
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
+            **kwargs
+        )
+    
+    def get_digital_currency_monthly(
+        self,
+        symbol,
+    market,
+    
+        datatype: Literal["json", "csv"] = "json",
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="DIGITAL_CURRENCY_MONTHLY",
             request_args=[
-                f"symbol={symbol}",
-                f"market={market}",
+            f"symbol={symbol}",
+            f"market={market}",
             ]
-            + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
-        )
 
-    def _get_wti(
-        self, interval=None, datatype: Literal["json", "csv"] = "json", **kwargs
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
+            **kwargs
+        )
+    
+    def get_wti(
+        self,
+    
+        interval=None,
+        datatype: Literal["json", "csv"] = "json",
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="WTI",
-            request_args=[]
+            request_args=[
+
+            ]
             + ([f"interval={interval}"] if interval is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_brent(
-        self, interval=None, datatype: Literal["json", "csv"] = "json", **kwargs
+    
+    def get_brent(
+        self,
+    
+        interval=None,
+        datatype: Literal["json", "csv"] = "json",
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="BRENT",
-            request_args=[]
+            request_args=[
+
+            ]
             + ([f"interval={interval}"] if interval is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_natural_gas(
-        self, interval=None, datatype: Literal["json", "csv"] = "json", **kwargs
+    
+    def get_natural_gas(
+        self,
+    
+        interval=None,
+        datatype: Literal["json", "csv"] = "json",
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="NATURAL_GAS",
-            request_args=[]
+            request_args=[
+
+            ]
             + ([f"interval={interval}"] if interval is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_copper(
-        self, interval=None, datatype: Literal["json", "csv"] = "json", **kwargs
+    
+    def get_copper(
+        self,
+    
+        interval=None,
+        datatype: Literal["json", "csv"] = "json",
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="COPPER",
-            request_args=[]
+            request_args=[
+
+            ]
             + ([f"interval={interval}"] if interval is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_aluminum(
-        self, interval=None, datatype: Literal["json", "csv"] = "json", **kwargs
+    
+    def get_aluminum(
+        self,
+    
+        interval=None,
+        datatype: Literal["json", "csv"] = "json",
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="ALUMINUM",
-            request_args=[]
+            request_args=[
+
+            ]
             + ([f"interval={interval}"] if interval is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_wheat(
-        self, interval=None, datatype: Literal["json", "csv"] = "json", **kwargs
+    
+    def get_wheat(
+        self,
+    
+        interval=None,
+        datatype: Literal["json", "csv"] = "json",
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="WHEAT",
-            request_args=[]
+            request_args=[
+
+            ]
             + ([f"interval={interval}"] if interval is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_corn(
-        self, interval=None, datatype: Literal["json", "csv"] = "json", **kwargs
+    
+    def get_corn(
+        self,
+    
+        interval=None,
+        datatype: Literal["json", "csv"] = "json",
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="CORN",
-            request_args=[]
+            request_args=[
+
+            ]
             + ([f"interval={interval}"] if interval is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_cotton(
-        self, interval=None, datatype: Literal["json", "csv"] = "json", **kwargs
+    
+    def get_cotton(
+        self,
+    
+        interval=None,
+        datatype: Literal["json", "csv"] = "json",
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="COTTON",
-            request_args=[]
+            request_args=[
+
+            ]
             + ([f"interval={interval}"] if interval is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_sugar(
-        self, interval=None, datatype: Literal["json", "csv"] = "json", **kwargs
+    
+    def get_sugar(
+        self,
+    
+        interval=None,
+        datatype: Literal["json", "csv"] = "json",
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="SUGAR",
-            request_args=[]
+            request_args=[
+
+            ]
             + ([f"interval={interval}"] if interval is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_coffee(
-        self, interval=None, datatype: Literal["json", "csv"] = "json", **kwargs
+    
+    def get_coffee(
+        self,
+    
+        interval=None,
+        datatype: Literal["json", "csv"] = "json",
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="COFFEE",
-            request_args=[]
+            request_args=[
+
+            ]
             + ([f"interval={interval}"] if interval is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_all_commodities(
-        self, interval=None, datatype: Literal["json", "csv"] = "json", **kwargs
+    
+    def get_all_commodities(
+        self,
+    
+        interval=None,
+        datatype: Literal["json", "csv"] = "json",
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="ALL_COMMODITIES",
-            request_args=[]
+            request_args=[
+
+            ]
             + ([f"interval={interval}"] if interval is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_real_gdp(
-        self, interval=None, datatype: Literal["json", "csv"] = "json", **kwargs
+    
+    def get_real_gdp(
+        self,
+    
+        interval=None,
+        datatype: Literal["json", "csv"] = "json",
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="REAL_GDP",
-            request_args=[]
+            request_args=[
+
+            ]
             + ([f"interval={interval}"] if interval is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_treasury_yield(
+    
+    def get_treasury_yield(
         self,
+    
         interval=None,
-        maturity=None,
+    maturity=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="TREASURY_YIELD",
-            request_args=[]
+            request_args=[
+
+            ]
             + ([f"interval={interval}"] if interval is not None else [])
             + ([f"maturity={maturity}"] if maturity is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_federal_funds_rate(
-        self, interval=None, datatype: Literal["json", "csv"] = "json", **kwargs
+    
+    def get_federal_funds_rate(
+        self,
+    
+        interval=None,
+        datatype: Literal["json", "csv"] = "json",
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="FEDERAL_FUNDS_RATE",
-            request_args=[]
+            request_args=[
+
+            ]
             + ([f"interval={interval}"] if interval is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_cpi(
-        self, interval=None, datatype: Literal["json", "csv"] = "json", **kwargs
+    
+    def get_cpi(
+        self,
+    
+        interval=None,
+        datatype: Literal["json", "csv"] = "json",
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="CPI",
-            request_args=[]
+            request_args=[
+
+            ]
             + ([f"interval={interval}"] if interval is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_sma(
+    
+    def get_sma(
         self,
         symbol,
-        interval,
-        time_period,
-        series_type,
+    interval,
+    time_period,
+    series_type,
         month=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="SMA",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
-                f"time_period={time_period}",
-                f"series_type={series_type}",
+            f"symbol={symbol}",
+            f"interval={interval}",
+            f"time_period={time_period}",
+            f"series_type={series_type}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_ema(
+    
+    def get_ema(
         self,
         symbol,
-        interval,
-        time_period,
-        series_type,
+    interval,
+    time_period,
+    series_type,
         month=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="EMA",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
-                f"time_period={time_period}",
-                f"series_type={series_type}",
+            f"symbol={symbol}",
+            f"interval={interval}",
+            f"time_period={time_period}",
+            f"series_type={series_type}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_wma(
+    
+    def get_wma(
         self,
         symbol,
-        interval,
-        time_period,
-        series_type,
+    interval,
+    time_period,
+    series_type,
         month=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="WMA",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
-                f"time_period={time_period}",
-                f"series_type={series_type}",
+            f"symbol={symbol}",
+            f"interval={interval}",
+            f"time_period={time_period}",
+            f"series_type={series_type}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_dema(
+    
+    def get_dema(
         self,
         symbol,
-        interval,
-        time_period,
-        series_type,
+    interval,
+    time_period,
+    series_type,
         month=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="DEMA",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
-                f"time_period={time_period}",
-                f"series_type={series_type}",
+            f"symbol={symbol}",
+            f"interval={interval}",
+            f"time_period={time_period}",
+            f"series_type={series_type}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_tema(
+    
+    def get_tema(
         self,
         symbol,
-        interval,
-        time_period,
-        series_type,
+    interval,
+    time_period,
+    series_type,
         month=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="TEMA",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
-                f"time_period={time_period}",
-                f"series_type={series_type}",
+            f"symbol={symbol}",
+            f"interval={interval}",
+            f"time_period={time_period}",
+            f"series_type={series_type}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_trima(
+    
+    def get_trima(
         self,
         symbol,
-        interval,
-        time_period,
-        series_type,
+    interval,
+    time_period,
+    series_type,
         month=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="TRIMA",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
-                f"time_period={time_period}",
-                f"series_type={series_type}",
+            f"symbol={symbol}",
+            f"interval={interval}",
+            f"time_period={time_period}",
+            f"series_type={series_type}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_kama(
+    
+    def get_kama(
         self,
         symbol,
-        interval,
-        time_period,
-        series_type,
+    interval,
+    time_period,
+    series_type,
         month=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="KAMA",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
-                f"time_period={time_period}",
-                f"series_type={series_type}",
+            f"symbol={symbol}",
+            f"interval={interval}",
+            f"time_period={time_period}",
+            f"series_type={series_type}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_mama(
+    
+    def get_mama(
         self,
         symbol,
-        interval,
-        series_type,
+    interval,
+    series_type,
         month=None,
-        fastlimit=None,
-        slowlimit=None,
+    fastlimit=None,
+    slowlimit=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="MAMA",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
-                f"series_type={series_type}",
+            f"symbol={symbol}",
+            f"interval={interval}",
+            f"series_type={series_type}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"fastlimit={fastlimit}"] if fastlimit is not None else [])
             + ([f"slowlimit={slowlimit}"] if slowlimit is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_vwap(
+    
+    def get_vwap(
         self,
         symbol,
-        interval,
+    interval,
         month=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="VWAP",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
+            f"symbol={symbol}",
+            f"interval={interval}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_t3(
+    
+    def get_t3(
         self,
         symbol,
-        interval,
-        time_period,
-        series_type,
+    interval,
+    time_period,
+    series_type,
         month=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="T3",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
-                f"time_period={time_period}",
-                f"series_type={series_type}",
+            f"symbol={symbol}",
+            f"interval={interval}",
+            f"time_period={time_period}",
+            f"series_type={series_type}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_macd(
+    
+    def get_macd(
         self,
         symbol,
-        interval,
-        series_type,
+    interval,
+    series_type,
         month=None,
-        fastperiod=None,
-        slowperiod=None,
-        signalperiod=None,
+    fastperiod=None,
+    slowperiod=None,
+    signalperiod=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="MACD",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
-                f"series_type={series_type}",
+            f"symbol={symbol}",
+            f"interval={interval}",
+            f"series_type={series_type}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"fastperiod={fastperiod}"] if fastperiod is not None else [])
             + ([f"slowperiod={slowperiod}"] if slowperiod is not None else [])
             + ([f"signalperiod={signalperiod}"] if signalperiod is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_macdext(
+    
+    def get_macdext(
         self,
         symbol,
-        interval,
-        series_type,
+    interval,
+    series_type,
         month=None,
-        fastperiod=None,
-        slowperiod=None,
-        signalperiod=None,
-        fastmatype=None,
-        slowmatype=None,
-        signalmatype=None,
+    fastperiod=None,
+    slowperiod=None,
+    signalperiod=None,
+    fastmatype=None,
+    slowmatype=None,
+    signalmatype=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="MACDEXT",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
-                f"series_type={series_type}",
+            f"symbol={symbol}",
+            f"interval={interval}",
+            f"series_type={series_type}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"fastperiod={fastperiod}"] if fastperiod is not None else [])
@@ -1059,27 +1278,27 @@ class AlphaVantageAPIHandler:
             + ([f"slowmatype={slowmatype}"] if slowmatype is not None else [])
             + ([f"signalmatype={signalmatype}"] if signalmatype is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_stoch(
+    
+    def get_stoch(
         self,
         symbol,
-        interval,
+    interval,
         month=None,
-        fastkperiod=None,
-        slowkperiod=None,
-        slowdperiod=None,
-        slowkmatype=None,
-        slowdmatype=None,
+    fastkperiod=None,
+    slowkperiod=None,
+    slowdperiod=None,
+    slowkmatype=None,
+    slowdmatype=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="STOCH",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
+            f"symbol={symbol}",
+            f"interval={interval}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"fastkperiod={fastkperiod}"] if fastkperiod is not None else [])
@@ -1088,902 +1307,904 @@ class AlphaVantageAPIHandler:
             + ([f"slowkmatype={slowkmatype}"] if slowkmatype is not None else [])
             + ([f"slowdmatype={slowdmatype}"] if slowdmatype is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_stochf(
+    
+    def get_stochf(
         self,
         symbol,
-        interval,
+    interval,
         month=None,
-        fastkperiod=None,
-        fastdperiod=None,
-        fastdmatype=None,
+    fastkperiod=None,
+    fastdperiod=None,
+    fastdmatype=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="STOCHF",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
+            f"symbol={symbol}",
+            f"interval={interval}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"fastkperiod={fastkperiod}"] if fastkperiod is not None else [])
             + ([f"fastdperiod={fastdperiod}"] if fastdperiod is not None else [])
             + ([f"fastdmatype={fastdmatype}"] if fastdmatype is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_rsi(
+    
+    def get_rsi(
         self,
         symbol,
-        interval,
-        time_period,
-        series_type,
+    interval,
+    time_period,
+    series_type,
         month=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="RSI",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
-                f"time_period={time_period}",
-                f"series_type={series_type}",
+            f"symbol={symbol}",
+            f"interval={interval}",
+            f"time_period={time_period}",
+            f"series_type={series_type}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_stochrsi(
+    
+    def get_stochrsi(
         self,
         symbol,
-        interval,
-        time_period,
-        series_type,
+    interval,
+    time_period,
+    series_type,
         month=None,
-        fastkperiod=None,
-        fastdperiod=None,
-        fastdmatype=None,
+    fastkperiod=None,
+    fastdperiod=None,
+    fastdmatype=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="STOCHRSI",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
-                f"time_period={time_period}",
-                f"series_type={series_type}",
+            f"symbol={symbol}",
+            f"interval={interval}",
+            f"time_period={time_period}",
+            f"series_type={series_type}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"fastkperiod={fastkperiod}"] if fastkperiod is not None else [])
             + ([f"fastdperiod={fastdperiod}"] if fastdperiod is not None else [])
             + ([f"fastdmatype={fastdmatype}"] if fastdmatype is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_willr(
+    
+    def get_willr(
         self,
         symbol,
-        interval,
-        time_period,
+    interval,
+    time_period,
         month=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="WILLR",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
-                f"time_period={time_period}",
+            f"symbol={symbol}",
+            f"interval={interval}",
+            f"time_period={time_period}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_adx(
+    
+    def get_adx(
         self,
         symbol,
-        interval,
-        time_period,
+    interval,
+    time_period,
         month=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="ADX",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
-                f"time_period={time_period}",
+            f"symbol={symbol}",
+            f"interval={interval}",
+            f"time_period={time_period}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_adxr(
+    
+    def get_adxr(
         self,
         symbol,
-        interval,
-        time_period,
+    interval,
+    time_period,
         month=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="ADXR",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
-                f"time_period={time_period}",
+            f"symbol={symbol}",
+            f"interval={interval}",
+            f"time_period={time_period}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_apo(
+    
+    def get_apo(
         self,
         symbol,
-        interval,
-        series_type,
+    interval,
+    series_type,
         month=None,
-        fastperiod=None,
-        slowperiod=None,
-        matype=None,
+    fastperiod=None,
+    slowperiod=None,
+    matype=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="APO",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
-                f"series_type={series_type}",
+            f"symbol={symbol}",
+            f"interval={interval}",
+            f"series_type={series_type}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"fastperiod={fastperiod}"] if fastperiod is not None else [])
             + ([f"slowperiod={slowperiod}"] if slowperiod is not None else [])
             + ([f"matype={matype}"] if matype is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_ppo(
+    
+    def get_ppo(
         self,
         symbol,
-        interval,
-        series_type,
+    interval,
+    series_type,
         month=None,
-        fastperiod=None,
-        slowperiod=None,
-        matype=None,
+    fastperiod=None,
+    slowperiod=None,
+    matype=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="PPO",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
-                f"series_type={series_type}",
+            f"symbol={symbol}",
+            f"interval={interval}",
+            f"series_type={series_type}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"fastperiod={fastperiod}"] if fastperiod is not None else [])
             + ([f"slowperiod={slowperiod}"] if slowperiod is not None else [])
             + ([f"matype={matype}"] if matype is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_mom(
+    
+    def get_mom(
         self,
         symbol,
-        interval,
-        time_period,
-        series_type,
+    interval,
+    time_period,
+    series_type,
         month=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="MOM",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
-                f"time_period={time_period}",
-                f"series_type={series_type}",
+            f"symbol={symbol}",
+            f"interval={interval}",
+            f"time_period={time_period}",
+            f"series_type={series_type}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_bop(
+    
+    def get_bop(
         self,
         symbol,
-        interval,
+    interval,
         month=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="BOP",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
+            f"symbol={symbol}",
+            f"interval={interval}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_cci(
+    
+    def get_cci(
         self,
         symbol,
-        interval,
-        time_period,
+    interval,
+    time_period,
         month=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="CCI",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
-                f"time_period={time_period}",
+            f"symbol={symbol}",
+            f"interval={interval}",
+            f"time_period={time_period}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_cmo(
+    
+    def get_cmo(
         self,
         symbol,
-        interval,
-        time_period,
-        series_type,
+    interval,
+    time_period,
+    series_type,
         month=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="CMO",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
-                f"time_period={time_period}",
-                f"series_type={series_type}",
+            f"symbol={symbol}",
+            f"interval={interval}",
+            f"time_period={time_period}",
+            f"series_type={series_type}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_roc(
+    
+    def get_roc(
         self,
         symbol,
-        interval,
-        time_period,
-        series_type,
+    interval,
+    time_period,
+    series_type,
         month=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="ROC",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
-                f"time_period={time_period}",
-                f"series_type={series_type}",
+            f"symbol={symbol}",
+            f"interval={interval}",
+            f"time_period={time_period}",
+            f"series_type={series_type}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_rocr(
+    
+    def get_rocr(
         self,
         symbol,
-        interval,
-        time_period,
-        series_type,
+    interval,
+    time_period,
+    series_type,
         month=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="ROCR",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
-                f"time_period={time_period}",
-                f"series_type={series_type}",
+            f"symbol={symbol}",
+            f"interval={interval}",
+            f"time_period={time_period}",
+            f"series_type={series_type}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_aroon(
+    
+    def get_aroon(
         self,
         symbol,
-        interval,
-        time_period,
+    interval,
+    time_period,
         month=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="AROON",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
-                f"time_period={time_period}",
+            f"symbol={symbol}",
+            f"interval={interval}",
+            f"time_period={time_period}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_aroonosc(
+    
+    def get_aroonosc(
         self,
         symbol,
-        interval,
-        time_period,
+    interval,
+    time_period,
         month=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="AROONOSC",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
-                f"time_period={time_period}",
+            f"symbol={symbol}",
+            f"interval={interval}",
+            f"time_period={time_period}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_mfi(
+    
+    def get_mfi(
         self,
         symbol,
-        interval,
-        time_period,
+    interval,
+    time_period,
         month=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="MFI",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
-                f"time_period={time_period}",
+            f"symbol={symbol}",
+            f"interval={interval}",
+            f"time_period={time_period}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_trix(
+    
+    def get_trix(
         self,
         symbol,
-        interval,
-        time_period,
-        series_type,
+    interval,
+    time_period,
+    series_type,
         month=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="TRIX",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
-                f"time_period={time_period}",
-                f"series_type={series_type}",
+            f"symbol={symbol}",
+            f"interval={interval}",
+            f"time_period={time_period}",
+            f"series_type={series_type}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_ultosc(
+    
+    def get_ultosc(
         self,
         symbol,
-        interval,
+    interval,
         month=None,
-        timeperiod1=None,
-        timeperiod2=None,
-        timeperiod3=None,
+    timeperiod1=None,
+    timeperiod2=None,
+    timeperiod3=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="ULTOSC",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
+            f"symbol={symbol}",
+            f"interval={interval}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"timeperiod1={timeperiod1}"] if timeperiod1 is not None else [])
             + ([f"timeperiod2={timeperiod2}"] if timeperiod2 is not None else [])
             + ([f"timeperiod3={timeperiod3}"] if timeperiod3 is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_dx(
+    
+    def get_dx(
         self,
         symbol,
-        interval,
-        time_period,
+    interval,
+    time_period,
         month=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="DX",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
-                f"time_period={time_period}",
+            f"symbol={symbol}",
+            f"interval={interval}",
+            f"time_period={time_period}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_minus_di(
+    
+    def get_minus_di(
         self,
         symbol,
-        interval,
-        time_period,
+    interval,
+    time_period,
         month=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="MINUS_DI",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
-                f"time_period={time_period}",
+            f"symbol={symbol}",
+            f"interval={interval}",
+            f"time_period={time_period}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_plus_di(
+    
+    def get_plus_di(
         self,
         symbol,
-        interval,
-        time_period,
+    interval,
+    time_period,
         month=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="PLUS_DI",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
-                f"time_period={time_period}",
+            f"symbol={symbol}",
+            f"interval={interval}",
+            f"time_period={time_period}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_minus_dm(
+    
+    def get_minus_dm(
         self,
         symbol,
-        interval,
-        time_period,
+    interval,
+    time_period,
         month=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="MINUS_DM",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
-                f"time_period={time_period}",
+            f"symbol={symbol}",
+            f"interval={interval}",
+            f"time_period={time_period}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_plus_dm(
+    
+    def get_plus_dm(
         self,
         symbol,
-        interval,
-        time_period,
+    interval,
+    time_period,
         month=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="PLUS_DM",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
-                f"time_period={time_period}",
+            f"symbol={symbol}",
+            f"interval={interval}",
+            f"time_period={time_period}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_bbands(
+    
+    def get_bbands(
         self,
         symbol,
-        interval,
-        time_period,
-        series_type,
+    interval,
+    time_period,
+    series_type,
         month=None,
-        nbdevup=None,
-        nbdevdn=None,
-        matype=None,
+    nbdevup=None,
+    nbdevdn=None,
+    matype=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="BBANDS",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
-                f"time_period={time_period}",
-                f"series_type={series_type}",
+            f"symbol={symbol}",
+            f"interval={interval}",
+            f"time_period={time_period}",
+            f"series_type={series_type}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"nbdevup={nbdevup}"] if nbdevup is not None else [])
             + ([f"nbdevdn={nbdevdn}"] if nbdevdn is not None else [])
             + ([f"matype={matype}"] if matype is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_midpoint(
+    
+    def get_midpoint(
         self,
         symbol,
-        interval,
-        time_period,
-        series_type,
+    interval,
+    time_period,
+    series_type,
         month=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="MIDPOINT",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
-                f"time_period={time_period}",
-                f"series_type={series_type}",
+            f"symbol={symbol}",
+            f"interval={interval}",
+            f"time_period={time_period}",
+            f"series_type={series_type}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_midprice(
+    
+    def get_midprice(
         self,
         symbol,
-        interval,
-        time_period,
+    interval,
+    time_period,
         month=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="MIDPRICE",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
-                f"time_period={time_period}",
+            f"symbol={symbol}",
+            f"interval={interval}",
+            f"time_period={time_period}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_sar(
+    
+    def get_sar(
         self,
         symbol,
-        interval,
+    interval,
         month=None,
-        acceleration=None,
-        maximum=None,
+    acceleration=None,
+    maximum=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="SAR",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
+            f"symbol={symbol}",
+            f"interval={interval}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"acceleration={acceleration}"] if acceleration is not None else [])
             + ([f"maximum={maximum}"] if maximum is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_trange(
+    
+    def get_trange(
         self,
         symbol,
-        interval,
+    interval,
         month=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="TRANGE",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
+            f"symbol={symbol}",
+            f"interval={interval}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_atr(
+    
+    def get_atr(
         self,
         symbol,
-        interval,
-        time_period,
+    interval,
+    time_period,
         month=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="ATR",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
-                f"time_period={time_period}",
+            f"symbol={symbol}",
+            f"interval={interval}",
+            f"time_period={time_period}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_natr(
+    
+    def get_natr(
         self,
         symbol,
-        interval,
-        time_period,
+    interval,
+    time_period,
         month=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="NATR",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
-                f"time_period={time_period}",
+            f"symbol={symbol}",
+            f"interval={interval}",
+            f"time_period={time_period}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_ad(
+    
+    def get_ad(
         self,
         symbol,
-        interval,
+    interval,
         month=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="AD",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
+            f"symbol={symbol}",
+            f"interval={interval}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_adosc(
+    
+    def get_adosc(
         self,
         symbol,
-        interval,
+    interval,
         month=None,
-        fastperiod=None,
-        slowperiod=None,
+    fastperiod=None,
+    slowperiod=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="ADOSC",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
+            f"symbol={symbol}",
+            f"interval={interval}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"fastperiod={fastperiod}"] if fastperiod is not None else [])
             + ([f"slowperiod={slowperiod}"] if slowperiod is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_obv(
+    
+    def get_obv(
         self,
         symbol,
-        interval,
+    interval,
         month=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="OBV",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
+            f"symbol={symbol}",
+            f"interval={interval}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_ht_trendline(
+    
+    def get_ht_trendline(
         self,
         symbol,
-        interval,
-        series_type,
+    interval,
+    series_type,
         month=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="HT_TRENDLINE",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
-                f"series_type={series_type}",
+            f"symbol={symbol}",
+            f"interval={interval}",
+            f"series_type={series_type}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_ht_sine(
+    
+    def get_ht_sine(
         self,
         symbol,
-        interval,
-        series_type,
+    interval,
+    series_type,
         month=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="HT_SINE",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
-                f"series_type={series_type}",
+            f"symbol={symbol}",
+            f"interval={interval}",
+            f"series_type={series_type}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_ht_trendmode(
+    
+    def get_ht_trendmode(
         self,
         symbol,
-        interval,
-        series_type,
+    interval,
+    series_type,
         month=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="HT_TRENDMODE",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
-                f"series_type={series_type}",
+            f"symbol={symbol}",
+            f"interval={interval}",
+            f"series_type={series_type}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_ht_dcperiod(
+    
+    def get_ht_dcperiod(
         self,
         symbol,
-        interval,
-        series_type,
+    interval,
+    series_type,
         month=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="HT_DCPERIOD",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
-                f"series_type={series_type}",
+            f"symbol={symbol}",
+            f"interval={interval}",
+            f"series_type={series_type}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_ht_dcphase(
+    
+    def get_ht_dcphase(
         self,
         symbol,
-        interval,
-        series_type,
+    interval,
+    series_type,
         month=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="HT_DCPHASE",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
-                f"series_type={series_type}",
+            f"symbol={symbol}",
+            f"interval={interval}",
+            f"series_type={series_type}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
-
-    def _get_ht_phasor(
+    
+    def get_ht_phasor(
         self,
         symbol,
-        interval,
-        series_type,
+    interval,
+    series_type,
         month=None,
         datatype: Literal["json", "csv"] = "json",
-        **kwargs,
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="HT_PHASOR",
             request_args=[
-                f"symbol={symbol}",
-                f"interval={interval}",
-                f"series_type={series_type}",
+            f"symbol={symbol}",
+            f"interval={interval}",
+            f"series_type={series_type}",
             ]
             + ([f"month={month}"] if month is not None else [])
             + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
+            **kwargs
         )
+    
+    def get_analytics_fixed_window(self, *args, **kwargs) -> None:
+        raise NotImplementedError('The multiple RANGE argument is currently not supported!')
 
-    def _get_analytics_fixed_window(self, *args, **kwargs) -> None:
-        raise NotImplementedError(
-            "The multiple RANGE argument is currently not supported!"
-        )
 
-    def _get_global_quote(
-        self, symbol, datatype: Literal["json", "csv"] = "json", **kwargs
+    def get_global_quote(
+        self,
+        symbol,
+        datatype: Literal["json", "csv"] = "json",
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="GLOBAL_QUOTE",
@@ -1992,63 +2213,97 @@ class AlphaVantageAPIHandler:
             ]
             + ([f"datatype={datatype}"] if datatype != "json" else []),
         )
+    
+    def get_market_status(
+        self,
+        **kwargs
+    ) -> Optional[dict[str, any]]:
+        return self._send_request(
+            function="MARKET_STATUS",
+            **kwargs
+        ) 
+    
+    def get_top_gainers_losers(
+        self,
+        **kwargs
+    ) -> Optional[dict[str, any]]:
+        return self._send_request(
+            function="TOP_GAINERS_LOSERS",
+            **kwargs
+        ) 
 
-    def _get_market_status(self, **kwargs) -> Optional[dict[str, any]]:
-        return self._send_request(function="MARKET_STATUS", **kwargs)
-
-    def _get_top_gainers_losers(self, **kwargs) -> Optional[dict[str, any]]:
-        return self._send_request(function="TOP_GAINERS_LOSERS", **kwargs)
-
-    def _get_real_gdp_per_capita(
-        self, datatype: Literal["json", "csv"] = "json", **kwargs
+    def get_real_gdp_per_capita(
+        self,
+        datatype: Literal["json", "csv"] = "json",
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="REAL_GDP_PER_CAPITA",
-            request_args=[] + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
-        )
-
-    def _get_inflation(
-        self, datatype: Literal["json", "csv"] = "json", **kwargs
+            request_args = []
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
+            **kwargs
+        ) 
+    
+    def get_inflation(
+        self,
+        datatype: Literal["json", "csv"] = "json",
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="INFLATION",
-            request_args=[] + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
-        )
-
-    def _get_retail_sales(
-        self, datatype: Literal["json", "csv"] = "json", **kwargs
+            request_args = []
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
+            **kwargs
+        ) 
+    
+    def get_retail_sales(
+        self,
+        datatype: Literal["json", "csv"] = "json",
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="RETAIL_SALES",
-            request_args=[] + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
-        )
-
-    def _get_durables(
-        self, datatype: Literal["json", "csv"] = "json", **kwargs
+            request_args = []
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
+            **kwargs
+        ) 
+    
+            
+    def get_durables(
+        self,
+        datatype: Literal["json", "csv"] = "json",
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="DURABLES",
-            request_args=[] + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
-        )
-
-    def _get_unemployment(
-        self, datatype: Literal["json", "csv"] = "json", **kwargs
+            request_args = []
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
+            **kwargs
+        ) 
+    
+                    
+    def get_unemployment(
+        self,
+        datatype: Literal["json", "csv"] = "json",
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="UNEMPLOYMENT",
-            request_args=[] + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
-        )
-
-    def _get_nonfarm_payroll(
-        self, datatype: Literal["json", "csv"] = "json", **kwargs
+            request_args = []
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
+            **kwargs
+        ) 
+    
+                            
+    def get_nonfarm_payroll(
+        self,
+        datatype: Literal["json", "csv"] = "json",
+        **kwargs
     ) -> Optional[dict[str, any]]:
         return self._send_request(
             function="NONFARM_PAYROLL",
-            request_args=[] + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs,
-        )
+            request_args = []
+            + ([f"datatype={datatype}"] if datatype != "json" else []),
+            **kwargs
+        ) 
+    
