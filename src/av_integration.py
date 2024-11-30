@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 from .av_integration_api import AlphaVantageAPIHandler
-from .av_util import AV_CANDLE_TF, AV_SYMBOL
+from .av_util import AV_CANDLE_TF, AV_SYMBOL, obfuscate_api_key
 
 handler_logger = logging.Logger("AV_APIHandler")
 handler_logger.setLevel(logging.DEBUG)
@@ -23,14 +23,13 @@ class AlphaVantageHandler:
     def __init__(self, api_key: str):
         self._api = AlphaVantageAPIHandler(api_key=api_key)
         self.logger = handler_logger
+        self.logger.debug(f"Created {self}.")
 
     def __str__(self) -> str:
         return self.__repr__()
 
     def __repr__(self) -> str:
-        return (
-            super().__repr__().replace("AlphaVantageAPIHandler", "AlphaVantageHandler")
-        )
+        return f"AlphaVantageHandler(api_key={obfuscate_api_key(self.api_key)})"
 
     def get_candles(self, ctf: AV_CANDLE_TF, **symbol_kwargs) -> Optional[pd.DataFrame]:
         """

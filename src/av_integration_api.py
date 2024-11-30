@@ -61,7 +61,7 @@ class AlphaVantageAPIHandler:
 
         self.logger = api_logger
 
-        self.logger.debug(f"Created {self}")
+        self.logger.debug(f"Created {self}.")
 
     def __str__(self) -> str:
         return self.__repr__()
