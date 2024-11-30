@@ -174,7 +174,7 @@ class AlphaVantageHandler:
 
         self.logger.debug("get_candles meta data: %s", data["Meta Data"])
 
-        df = pd.DataFrame.from_dict(candle_data, orient="index")
+        df = cast(pd.DataFrame, pd.DataFrame.from_dict(candle_data, orient="index"))
         df.index = pd.to_datetime(df.index, format="%Y-%m-%d")
 
         df.rename(
@@ -186,18 +186,23 @@ class AlphaVantageHandler:
             },
             inplace=True,
         )
-        df = df.astype(
-            {
-                "Open": np.float32,
-                "High": np.float32,
-                "Low": np.float32,
-                "Close": np.float32,
-            }
-        )
+        df = df.astype(np.float32)
         if "symbol" in kwargs:
-            self.logger.debug("Pulled %d daily candles for %s", len(df), symbol)
+            self.logger.debug(
+                "Pulled %d daily candles for %s", len(df), kwargs["symbol"]
+            )
+        elif "currency_from" in kwargs and "currency_to" in kwargs:
+            self.logger.debug(
+                "Pulled %d daily forex candles for %s/%s",
+                len(df),
+                kwargs["currency_from"],
+                kwargs["currency_to"],
+            )
         else:
             self.logger.debug(
-                "Pulled %d daily candles for %s/%s", len(df), from_symbol, to_symbol
+                "Pulled %d daily forex candles for %s (in %s)",
+                len(df),
+                kwargs["crypto"],
+                kwargs["currency"],
             )
         return df
