@@ -73,11 +73,13 @@ class AlphaVantageHandler:
     # fmt: on
     def get_candles(
         self,
-        ctf: AV_CANDLE_TF,
+        ctf: AV_CANDLE_TF | str,
         outputsize: Literal["full", "compact"] = "full",
         **kwargs,
-    ) -> Optional[pd.DataFrame]:
+    ):
         """Note: We discard the volumes from the data."""
+        if isinstance(ctf, str):
+            ctf = AV_CANDLE_TF(ctf)
         if "symbol" in kwargs:
             candle_type = AV_CANDLE_TYPE.STOCK
             symbol = cast(AV_SYMBOL, kwargs.pop("symbol"))
@@ -130,7 +132,8 @@ class AlphaVantageHandler:
                     symbol,
                     market,
                 )
-        return AlphaVantageHandler._candle_data_to_df(candle_data)
+        df = AlphaVantageHandler._candle_data_to_df(candle_data)
+        return df
 
     def get_candles_stocks(
         self,
