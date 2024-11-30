@@ -3,15 +3,12 @@ from pathlib import Path
 import requests
 from bs4 import BeautifulSoup
 
-# URL of the Alpha Vantage documentation
 url = "https://www.alphavantage.co/documentation/"
 
 
 def main() -> None:
-    # Fetch the page content
     response = requests.get(url)
 
-    # Check if the request was successful
     if response.status_code == 200:
         soup = BeautifulSoup(response.content, "html.parser")
     else:
@@ -32,18 +29,13 @@ def main() -> None:
         or " function=" in line
     ]
 
-    # Initialize variables
     grouped_dict = {}  # This will be the final dictionary
     current_group = {"required": [], "optional": []}
-    current_function = None
-
-    # Iterate through the list
     current_function = None
     for item in split:
         if current_function == "ANALYTICS_FIXED_WINDOW":
             current_function = "__SKIP"
         if "function=" in item:
-            # When a new function is found, save the current group under the previous function name
             if current_function and (
                 current_group["required"] or current_group["optional"]
             ):
@@ -66,7 +58,6 @@ def main() -> None:
                 elif param != "datatype" and param not in current_group["optional"]:
                     current_group["optional"].append(param)
 
-    # After the loop, save the last group under its function name
     if current_function and (current_group["required"] or current_group["optional"]):
         grouped_dict[current_function] = current_group
 

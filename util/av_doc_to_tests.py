@@ -5,15 +5,12 @@ from pathlib import Path
 import requests
 from bs4 import BeautifulSoup
 
-# URL of the Alpha Vantage documentation
 url = "https://www.alphavantage.co/documentation/"
 
 
 def main() -> None:
-    # Fetch the page content
     response = requests.get(url)
 
-    # Check if the request was successful
     if response.status_code == 200:
         soup = BeautifulSoup(response.content, "html.parser")
     else:
