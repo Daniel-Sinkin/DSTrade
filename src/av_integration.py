@@ -7,6 +7,7 @@ import pandas as pd
 from .av_integration_api import AlphaVantageAPIHandler
 from .av_util import (
     AV_CANDLE_TF,
+    AV_CANDLE_TYPE,
     AV_CURRENCY,
     AV_CURRENCY_DIGITAL,
     AV_DATA_CANDLE,
@@ -14,7 +15,7 @@ from .av_util import (
     obfuscate_api_key,
 )
 
-handler_logger = logging.Logger("AV_APIHandler")
+handler_logger = logging.Logger("AV_Handler")
 handler_logger.setLevel(logging.DEBUG)
 
 stream_handler = logging.StreamHandler()
@@ -38,6 +39,30 @@ class AlphaVantageHandler:
     def __repr__(self) -> str:
         return f"AlphaVantageHandler(api_key={obfuscate_api_key(self._api.api_key)})"
 
+    @staticmethod
+    def _candle_data_to_df(
+        candle_data: list[AV_DATA_CANDLE], ohlc_fmt: list[str] = None
+    ) -> pd.DataFrame:
+        if len(candle_data) == 0:
+            return pd.DataFrame(columns=["Open", "High", "Low", "Close"])
+        if ohlc_fmt is None:
+            ohlc_fmt = ["1. open", "2. high", "3. low", "4. close"]
+        df = cast(pd.DataFrame, pd.DataFrame.from_dict(candle_data, orient="index"))
+        if "5. volume" in df:
+            df.drop(columns="5. volume", inplace=True)
+        df.index = pd.to_datetime(df.index, format="mixed")
+
+        renamer_map = {
+            old: new for old, new in zip(ohlc_fmt, ["Open", "High", "Low", "Close"])
+        }
+        df.rename(
+            columns=renamer_map,
+            inplace=True,
+        )
+        df = df.astype(np.float32)
+
+        return df
+
     # fmt: off
     @overload
     def get_candles(self, ctf: AV_CANDLE_TF, symbol: AV_SYMBOL, month: Optional[str] = None, outputsize: Literal["full", "compact"] = "full") -> Optional[pd.DataFrame]: ...
@@ -54,155 +79,195 @@ class AlphaVantageHandler:
     ) -> Optional[pd.DataFrame]:
         """Note: We discard the volumes from the data."""
         if "symbol" in kwargs:
-            symbol = kwargs["symbol"]
-            if ctf == AV_CANDLE_TF.MONTHLY:
-                data = self._api.get_time_series_monthly(
-                    symbol=symbol, outputsize="full", **kwargs
-                )
-                if data is None:
-                    return None
-                candle_data = cast(AV_DATA_CANDLE, data["Monthly Time Series"])
-            elif ctf == AV_CANDLE_TF.WEEKLY:
-                data = self._api.get_time_series_weekly(
-                    symbol=symbol, outputsize="full", **kwargs
-                )
-                if data is None:
-                    return None
-                candle_data = cast(AV_DATA_CANDLE, data["Weekly Time Series"])
-            elif ctf == AV_CANDLE_TF.DAY:
-                data = self._api.get_time_series_daily(
-                    symbol=symbol, outputsize="full", **kwargs
-                )
-                if data is None:
-                    return None
-                candle_data = cast(AV_DATA_CANDLE, data["Time Series (Daily)"])
-            else:
-                data = self._api.get_time_series_intraday(
-                    symbol=symbol,
-                    interval=ctf,
-                    month=kwargs.get("month"),
-                    outputsize="full",
-                    **kwargs,
-                )
-                if data is None:
-                    return None
-                candle_data = cast(AV_DATA_CANDLE, data[f"Time Series ({ctf})"])
+            candle_type = AV_CANDLE_TYPE.STOCK
+            symbol = cast(AV_SYMBOL, kwargs.pop("symbol"))
+            candle_data = self.get_candles_stocks(
+                ctf=ctf, symbol=symbol, outputsize=outputsize, **kwargs
+            )
         elif "currency_from" in kwargs and "currency_to" in kwargs:
-            from_symbol = kwargs["currency_from"]
-            to_symbol = kwargs["currency_to"]
-            if ctf == AV_CANDLE_TF.MONTHLY:
-                data = self._api.get_fx_monthly(
-                    from_symbol=from_symbol,
-                    to_symbol=to_symbol,
-                    outputsize="full",
-                    **kwargs,
-                )
-                if data is None:
-                    return None
-                candle_data = cast(AV_DATA_CANDLE, data["Time Series FX (Monthly)"])
-            elif ctf == AV_CANDLE_TF.WEEKLY:
-                data = self._api.get_fx_weekly(
-                    symbol=symbol, outputsize="full", **kwargs
-                )
-                if data is None:
-                    return None
-                candle_data = cast(AV_DATA_CANDLE, data["Weekly Time Series (Weekly)"])
-            elif ctf == AV_CANDLE_TF.DAY:
-                data = self._api.get_fx_daily(
-                    symbol=symbol, outputsize="full", **kwargs
-                )
-                if data is None:
-                    return None
-                candle_data = cast(AV_DATA_CANDLE, data["Time Series (Daily)"])
-            else:
-                data = self._api.get_fx_intraday(
-                    from_symbol=from_symbol,
-                    to_symbol=to_symbol,
-                    interval=ctf,
-                    month=kwargs.get("month"),
-                    outputsize="full",
-                    **kwargs,
-                )
-                if data is None:
-                    return None
-                candle_data = cast(AV_DATA_CANDLE, data[f"Time Series ({ctf})"])
+            candle_type = AV_CANDLE_TYPE.FOREX
+            from_symbol = cast(AV_CURRENCY, kwargs.pop("currency_from"))
+            to_symbol = cast(AV_CURRENCY, kwargs.pop("currency_to"))
+            candle_data = self.get_candles_forex(
+                ctf=ctf,
+                from_symbol=from_symbol,
+                to_symbol=to_symbol,
+                outputsize=outputsize,
+                **kwargs,
+            )
         elif "crypto" in kwargs and "currency" in kwargs:
-            symbol = kwargs["crypto"]
-            market = kwargs["currency"]
-            if ctf == AV_CANDLE_TF.MONTHLY:
-                data = self._api.get_digital_currency_monthly(
-                    symbol=symbol,
-                    market=market,
-                    outputsize="full",
-                    **kwargs,
-                )
-                if data is None:
-                    return None
-                candle_data = cast(
-                    AV_DATA_CANDLE, data["Time Series (Digital Currency Monthly)"]
-                )
-            elif ctf == AV_CANDLE_TF.WEEKLY:
-                data = self._api.get_digital_currency_weekly(
-                    symbol=symbol, outputsize="full", **kwargs
-                )
-                if data is None:
-                    return None
-                candle_data = cast(
-                    AV_DATA_CANDLE, data["Time Series (Digital Currency Weekly)"]
-                )
-            elif ctf == AV_CANDLE_TF.DAY:
-                data = self._api.get_digital_currency_daily(
-                    symbol=symbol, outputsize="full", **kwargs
-                )
-                if data is None:
-                    return None
-                candle_data = cast(AV_DATA_CANDLE, data[f"Time Series Crypto ({ctf})"])
-            else:
-                data = self._api.get_crypto_intraday(
-                    from_symbol=from_symbol,
-                    to_symbol=to_symbol,
-                    interval=ctf,
-                    month=kwargs.get("month"),
-                    outputsize="full",
-                    **kwargs,
-                )
-                if data is None:
-                    return None
-                candle_data = cast(AV_DATA_CANDLE, data[f"Time Series ({ctf})"])
+            candle_type = AV_CANDLE_TYPE.CRYPTO
+            symbol = cast(AV_CURRENCY_DIGITAL, kwargs.pop("crypto"))
+            market = cast(AV_CURRENCY, kwargs.pop("currency"))
+            candle_data = self.get_candles_crypto(
+                ctf=ctf, symbol=symbol, market=market, outputsize=outputsize, **kwargs
+            )
         else:
             raise ValueError(f"{kwargs=} is not supported for a get_candles call.")
 
-        self.logger.debug("get_candles meta data: %s", data["Meta Data"])
+        if candle_data is None:
+            return None
 
-        df = cast(pd.DataFrame, pd.DataFrame.from_dict(candle_data, orient="index"))
-        df.index = pd.to_datetime(df.index, format="%Y-%m-%d")
+        candle_data = cast(list[AV_DATA_CANDLE], candle_data)
+        match candle_type:
+            case AV_CANDLE_TYPE.STOCK:
+                self.logger.debug(
+                    "Pulled %d %s candles for %s.", len(candle_data), ctf, symbol
+                )
+            case AV_CANDLE_TYPE.FOREX:
+                self.logger.debug(
+                    "Pulled %d %s forex candles for %s/%s.",
+                    len(candle_data),
+                    ctf,
+                    from_symbol,
+                    to_symbol,
+                )
+            case AV_CANDLE_TYPE.CRYPTO:
+                self.logger.debug(
+                    "Pulled %d %s crypto candles for %s (in %s).",
+                    len(candle_data),
+                    ctf,
+                    symbol,
+                    market,
+                )
+        return AlphaVantageHandler._candle_data_to_df(candle_data)
 
-        df.rename(
-            columns={
-                "1. open": "Open",
-                "2. high": "High",
-                "3. low": "Low",
-                "4. close": "Close",
-            },
-            inplace=True,
-        )
-        df = df.astype(np.float32)
-        if "symbol" in kwargs:
-            self.logger.debug(
-                "Pulled %d daily candles for %s", len(df), kwargs["symbol"]
+    def get_candles_stocks(
+        self,
+        ctf: AV_CANDLE_TF,
+        symbol: AV_SYMBOL,
+        outputsize: Literal["full", "compact"] = "full",
+        **kwargs,
+    ) -> Optional[list[AV_DATA_CANDLE]]:
+        if ctf == AV_CANDLE_TF.MONTH:
+            data = self._api.get_time_series_monthly(symbol=symbol, **kwargs)
+            if data is None:
+                return None
+            candle_data = cast(AV_DATA_CANDLE, data["Monthly Time Series"])
+        elif ctf == AV_CANDLE_TF.WEEK:
+            data = self._api.get_time_series_weekly(symbol=symbol, **kwargs)
+            if data is None:
+                return None
+            candle_data = cast(AV_DATA_CANDLE, data["Weekly Time Series"])
+        elif ctf == AV_CANDLE_TF.DAY:
+            data = self._api.get_time_series_daily(
+                symbol=symbol, outputsize=outputsize, **kwargs
             )
-        elif "currency_from" in kwargs and "currency_to" in kwargs:
-            self.logger.debug(
-                "Pulled %d daily forex candles for %s/%s",
-                len(df),
-                kwargs["currency_from"],
-                kwargs["currency_to"],
+            if data is None:
+                return None
+            candle_data = cast(AV_DATA_CANDLE, data["Time Series (Daily)"])
+        else:
+            data = self._api.get_time_series_intraday(
+                symbol=symbol,
+                interval=ctf,
+                month=kwargs.pop("month"),
+                outputsize=outputsize,
+                **kwargs,
+            )
+            if data is None:
+                return None
+            candle_data = cast(AV_DATA_CANDLE, data[f"Time Series ({ctf})"])
+        return candle_data
+
+    def get_candles_forex(
+        self,
+        ctf: AV_CANDLE_TF,
+        from_symbol: AV_SYMBOL,
+        to_symbol: AV_CURRENCY,
+        outputsize: Literal["full", "compact"] = "full",
+        **kwargs,
+    ) -> Optional[list[AV_DATA_CANDLE]]:
+        if ctf == AV_CANDLE_TF.MONTH:
+            data = self._api.get_fx_monthly(
+                from_symbol=from_symbol,
+                to_symbol=to_symbol,
+                **kwargs,
+            )
+            if data is None:
+                return None
+            candle_data = cast(AV_DATA_CANDLE, data["Time Series FX (Monthly)"])
+        elif ctf == AV_CANDLE_TF.WEEK:
+            data = self._api.get_fx_weekly(
+                from_symbol=from_symbol,
+                to_symbol=to_symbol,
+                **kwargs,
+            )
+            if data is None:
+                return None
+            candle_data = cast(AV_DATA_CANDLE, data["Time Series FX (Weekly)"])
+        elif ctf == AV_CANDLE_TF.DAY:
+            data = self._api.get_fx_daily(
+                from_symbol=from_symbol,
+                to_symbol=to_symbol,
+                outputsize=outputsize,
+                **kwargs,
+            )
+            if data is None:
+                return None
+            candle_data = cast(AV_DATA_CANDLE, data["Time Series FX (Daily)"])
+        else:
+            data = self._api.get_fx_intraday(
+                from_symbol=from_symbol,
+                to_symbol=to_symbol,
+                interval=ctf,
+                outputsize=outputsize,
+                **kwargs,
+            )
+            if data is None:
+                return None
+            candle_data = cast(AV_DATA_CANDLE, data[f"Time Series FX ({ctf})"])
+        return candle_data
+
+    def get_candles_crypto(
+        self,
+        ctf: AV_CANDLE_TF,
+        symbol: AV_CURRENCY_DIGITAL,
+        market: AV_CURRENCY,
+        outputsize: Literal["full", "compact"] = "full",
+        **kwargs,
+    ) -> Optional[list[AV_DATA_CANDLE]]:
+        if ctf == AV_CANDLE_TF.MONTH:
+            data = self._api.get_digital_currency_monthly(
+                symbol=symbol,
+                market=market,
+                **kwargs,
+            )
+            if data is None:
+                return None
+            candle_data = cast(
+                AV_DATA_CANDLE, data["Time Series (Digital Currency Monthly)"]
+            )
+        elif ctf == AV_CANDLE_TF.WEEK:
+            data = self._api.get_digital_currency_weekly(
+                symbol=symbol,
+                market=market,
+                **kwargs,
+            )
+            if data is None:
+                return None
+            candle_data = cast(
+                AV_DATA_CANDLE, data["Time Series (Digital Currency Weekly)"]
+            )
+        elif ctf == AV_CANDLE_TF.DAY:
+            data = self._api.get_digital_currency_daily(
+                symbol=symbol,
+                market=market,
+                **kwargs,
+            )
+            if data is None:
+                return None
+            candle_data = cast(
+                AV_DATA_CANDLE, data["Time Series (Digital Currency Daily)"]
             )
         else:
-            self.logger.debug(
-                "Pulled %d daily forex candles for %s (in %s)",
-                len(df),
-                kwargs["crypto"],
-                kwargs["currency"],
+            data = self._api.get_crypto_intraday(
+                symbol=symbol,
+                market=market,
+                interval=ctf,
+                outputsize=outputsize,
+                **kwargs,
             )
-        return df
+            if data is None:
+                return None
+            candle_data = cast(AV_DATA_CANDLE, data[f"Time Series Crypto ({ctf})"])
+        return candle_data

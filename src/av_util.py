@@ -1,11 +1,13 @@
 import datetime as dt
-from enum import StrEnum
+from enum import Enum, StrEnum, auto
 from typing import TypedDict
 
 
 def obfuscate_api_key(api_key: str) -> str:
     if api_key == "demo":  # Don't have to obfuscate demo account
         return api_key
+    if len(api_key) <= 3:
+        return "..."
 
     return api_key[:2] + "..." + api_key[-2:]
 
@@ -29,6 +31,12 @@ class AV_DATA_CANDLE(TypedDict, total=False):
     }
 
 
+class AV_CANDLE_TYPE(Enum):
+    STOCK = auto()
+    FOREX = auto()
+    CRYPTO = auto()
+
+
 class AV_SYMBOL(StrEnum):
     AAPL = "AAPL"
     IBM = "IBM"
@@ -48,8 +56,8 @@ class AV_CANDLE_TF(StrEnum):
     MIN30 = "30min"
     HOUR = "60min"
     DAY = "1day"
-    WEEKLY = "1week"
-    MONTHLY = "1month"
+    WEEK = "1week"
+    MONTH = "1month"
 
 
 class AV_CURRENCY(StrEnum):  # As of 2024-11-29

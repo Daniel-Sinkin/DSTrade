@@ -2,12 +2,13 @@ import datetime as dt
 import json
 import logging
 import os
+import time
 from typing import Literal, Optional
 
 import requests
 from dotenv import load_dotenv
 
-api_logger = logging.Logger("APIHandler")
+api_logger = logging.Logger("AV_APIHandler")
 api_logger.setLevel(logging.DEBUG)
 
 stream_handler = logging.StreamHandler()
@@ -53,6 +54,13 @@ def format_byte_size(n_bytes: int) -> str:
         return f"{n_bytes:.2f} KByte"
 
 
+def format_time(seconds: float) -> str:
+    if seconds >= 1.0:
+        return f"{seconds:.2f}"
+    elif seconds > 0.010:
+        return f"{seconds / 1000:.0f}ms"
+
+
 class AlphaVantageAPIHandler:
     def __init__(self, api_key: str = "demo"):
         self.api_key = api_key
@@ -85,14 +93,16 @@ class AlphaVantageAPIHandler:
             [f"function={function}"] + request_args + [f"apikey={self.api_key}"]
         )
 
+        t0 = time.monotonic()
         try:
             response = requests.get(request_url)
         except Exception as e:
             self.logger.error(f"Request got generic error '{e}'")
             return None
+        t1 = time.monotonic()
         payload_size = len(response.content)
         self.logger.debug(
-            f"'{function}' Payload size: {format_byte_size(payload_size)}."
+            f"'{function}' call took {t1 - t0:.2} seconds. Payload size: {format_byte_size(payload_size)}. Request Speed {format_byte_size(payload_size/(t1-t0))}/s."
         )
 
         response_data: dict[str, any] = response.json()

@@ -7,7 +7,7 @@ from typing import Literal, Optional
 import requests
 from dotenv import load_dotenv
 
-api_logger = logging.Logger("APIHandler")
+api_logger = logging.Logger("AV_APIHandler")
 api_logger.setLevel(logging.DEBUG)
 
 stream_handler = logging.StreamHandler()
