@@ -59,6 +59,18 @@ class AV_CANDLE_TF(StrEnum):
     WEEK = "1week"
     MONTH = "1month"
 
+    @staticmethod
+    def get_minute_timeframes() -> list["AV_CANDLE_TF"]:
+        return [
+            AV_CANDLE_TF.MIN,
+            AV_CANDLE_TF.MIN5,
+            AV_CANDLE_TF.MIN15,
+            AV_CANDLE_TF.MIN30,
+        ]
+
+    def is_minute(self) -> bool:
+        return self in AV_CANDLE_TF.get_minute_timeframes()
+
 
 class AV_CURRENCY(StrEnum):  # As of 2024-11-29
     AED = "AED"
