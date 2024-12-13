@@ -1,240 +1,176 @@
-from pathlib import Path
+import io
+import sys
 
+import bs4
 import requests
-from bs4 import BeautifulSoup
+
+LBRACE = "{"
+RBRACE = "}"
 
 url = "https://www.alphavantage.co/documentation/"
 
 
+def process_section(
+    section: bs4.element.Tag,
+) -> tuple[str, dict[str, dict[str, str | list[str]]]]:
+    section_title = section.find("h2").text
+    # print("Section Title:", section_title)
+
+    collection = {}
+    contents = [
+        c for c in section.contents if c != "\n" and not str(c).startswith("<br/")
+    ]
+    i = 0
+    while True:
+        try:
+            while not str(contents[i]).startswith("<h4"):
+                i += 1
+        except IndexError:
+            break
+        func_name = contents[i].text
+        id_ = contents[i].get("id")
+        if func_name.startswith("Quote Endpoint"):
+            func_name = "GLOBAL_QUOTE"
+
+        i += 1
+        descr = []
+        while str(contents[i]).startswith("<p"):
+            if contents[i].text != "":
+                descr.append(contents[i].text.strip())
+            i += 1
+        description = "\n".join(descr)
+
+        assert str(contents[i]) == "<h6><b>API Parameters</b></h6>"
+        i += 1
+        reqs = []
+        opts = []
+        while True:
+            if str(contents[i]) == "<p><b>❚ Required: <code>apikey</code></b></p>":
+                i += 2
+                break
+            argument = str(contents[i].find("code").text)
+            if argument == "function":
+                code = contents[i + 1].find("code")
+                if code is not None:
+                    func_name = code.text.split("=")[1]
+                i += 2
+                continue
+
+            lines = []
+            is_req = str(contents[i]).startswith("<p><b>❚ Required: ")
+            i += 1
+            while "❚" not in str(contents[i]):
+                lines.append(contents[i].text)
+                i += 1
+
+            annotated_content = [argument, "\n".join(lines)]
+            if is_req:
+                reqs.append(annotated_content)
+            else:
+                opts.append(annotated_content)
+
+        assert func_name is not None
+        collection[func_name] = {
+            "description": description,
+            "id": id_,
+            "args_required": reqs,
+            "args_optional": opts,
+        }
+        func_name = None
+    return section_title, collection
+
+
+def format_opt_request_arg(arg: str) -> str:
+    return f'([f"{arg}={LBRACE}{arg}{RBRACE}"] if {arg} is not None else [])'
+
+
+def format_opt_arg(arg: str) -> str:
+    return f"{arg}:Optional[any]=None"
+
+
+def write_processed_dict_to_script(section_dict) -> None:
+    output_stream = io.StringIO()
+
+    original_stdout = sys.stdout
+    sys.stdout = output_stream
+
+    try:
+        for section, dict_ in section_dict.items():
+            print("    ", "#" * (len(section) + 4), sep="")
+            print("    ", "# ", section, " #", sep="")
+            print("    ", "#" * (len(section) + 4), sep="")
+
+            print()
+            for k, v in dict_.items():
+                args_req = [a[0] for a in v["args_required"]]
+                args_req_str = ", ".join(args_req)
+                args_req_request = [f'"{arg}={arg}"' for arg in args_req]
+
+                args_opt = [a[0] for a in v["args_optional"]]
+                args_opt_adj = [format_opt_arg(arg) for arg in args_opt]
+                args_opt_str = ", ".join(args_opt_adj)
+                args_opt_request = [format_opt_request_arg(arg) for arg in args_opt]
+
+                args = ["self"]
+                if args_req_str != "":
+                    args.append(args_req_str)
+                if args_opt_str != "":
+                    args.append(args_opt_str)
+                print(
+                    "    ",
+                    f"def get_{k.lower()}({','.join(args)},**kwargs) -> dict[str, any]:",
+                    sep="",
+                )
+                print('        """')
+                print(f"https://www.alphavantage.co/documentation/#{v['id']}")
+                for line in v["description"].splitlines():
+                    print("", line, sep="")
+                for arg, desc in v["args_required"]:
+                    print(f"### {arg} (required)")
+                    print(f"{desc}")
+                for arg, desc in v["args_optional"]:
+                    print(f"### {arg} (optional)")
+                    print(f"{desc}")
+                print('        """')
+                request_args_optional = (
+                    f" + {' + '.join(args_opt_request)}"
+                    if len(args_opt_request) > 0
+                    else ""
+                )
+                print(f"""
+            return self._send_request(
+                function="{k}",
+                request_args=[{','.join(args_req_request)}]{request_args_optional},
+                **kwargs
+            )
+                """)
+    finally:
+        sys.stdout = original_stdout
+
+    python_code = output_stream.getvalue()
+
+    with open("util/_av_integration_api_base.py", "r") as file:
+        code_base = file.read()
+    with open("test_output.py", "w") as file:
+        file.write(code_base + "\n" + python_code)
+
+
 def main() -> None:
     response = requests.get(url)
+    if response.status_code != 200:
+        raise RuntimeError("Failed to get HTML documentation from AlphaVantage!")
 
-    if response.status_code == 200:
-        soup = BeautifulSoup(response.content, "html.parser")
-    else:
-        print(f"Failed to fetch the page. Status code: {response.status_code}")
-        raise RuntimeError
+    soup = bs4.BeautifulSoup(response.text, "html.parser")
 
-    main_content = soup.find("article")
-
-    split = [
-        line
-        for line in main_content.text.splitlines()
-        if (
-            "❚ Required" in line
-            and "❚ Required: function" not in line
-            and "❚ Required: apikey" not in line
-        )
-        or "❚ Optional" in line
-        or " function=" in line
-    ]
-
-    grouped_dict = {}  # This will be the final dictionary
-    current_group = {"required": [], "optional": []}
-    current_function = None
-    for item in split:
-        if current_function == "ANALYTICS_FIXED_WINDOW":
-            current_function = "__SKIP"
-        if "function=" in item:
-            if current_function and (
-                current_group["required"] or current_group["optional"]
-            ):
-                grouped_dict[current_function] = current_group
-                current_group = {"required": [], "optional": []}
-            # Extract the new function name
-            current_function = item.split("function=")[-1].strip()
-        elif item.startswith("❚"):
-            if current_function == "__SKIP":
-                continue
-            if "Required:" in item:
-                param = item.replace(" ", "").replace("❚Required:", "").strip()
-                if param not in current_group["required"]:
-                    current_group["required"].append(param)
-            elif "Optional:" in item:
-                param = item.replace(" ", "").replace("❚Optional:", "").strip()
-                if param == "time_fromandtime_to":
-                    current_group["optional"].append("time_from")
-                    current_group["optional"].append("time_to")
-                elif param != "datatype" and param not in current_group["optional"]:
-                    current_group["optional"].append(param)
-
-    if current_function and (current_group["required"] or current_group["optional"]):
-        grouped_dict[current_function] = current_group
-
-    brace_L = "{"
-    brace_R = "}"
-    iteration = 0
-
-    av_integration_py = "from typing import Optional, Literal\n"
-    with open(Path("util").joinpath("_av_integration_api_base.py"), "r") as file:
-        av_integration_py = file.read()
-
-    for k, v in grouped_dict.items():
-        iteration += 1
-        args_required = ""
-        req_args_required = ""
-        for i, arg in enumerate(v["required"]):
-            args_required += f"    {arg},"
-            req_args_required += f'            f"{arg}={brace_L}{arg}{brace_R}",'
-
-            if i < len(v["required"]) - 1:
-                args_required += "\n"
-                req_args_required += "\n"
-
-        args_optional = ""
-        req_args_optional = ""
-        for j, arg in enumerate(v["optional"]):
-            args_optional += f"    {arg}=None,"
-            f_string = f'f"{arg}={brace_L}{arg}{brace_R}"'
-            req_args_optional += (
-                f"            + ([{f_string}] if {arg} is not None else [])"
-            )
-            if j < len(v["optional"]) - 1:
-                args_optional += "\n"
-                req_args_optional += "\n"
-
-        args_required = f"""
-    def get_{k.lower()}(
-        self,
-    {args_required}
-    {args_optional}
-        datatype: Literal["json", "csv"] = "json",
-        **kwargs
-    ) -> Optional[dict[str, any]]:
-        return self._send_request(
-            function=\"{k}\",
-            request_args=[
-{req_args_required}
-            ]
-{req_args_optional}
-            + ([f"datatype={brace_L}datatype{brace_R}"] if datatype != \"json\" else []),
-            **kwargs
-        )
-    """
-        av_integration_py += args_required
-
-    av_integration_py += "\n"
-    av_integration_py += (
-        "    def get_analytics_fixed_window(self, *args, **kwargs) -> None:\n"
-    )
-    av_integration_py += "        raise NotImplementedError('The multiple RANGE argument is currently not supported!')\n"
-    av_integration_py += "\n"
-
-    # Either no arguments at all (not automatically supported), or function not given in documentation
-    av_integration_py += """
-    def get_global_quote(
-        self,
-        symbol,
-        datatype: Literal[\"json\", \"csv\"] = \"json\",
-        **kwargs
-    ) -> Optional[dict[str, any]]:
-        return self._send_request(
-            function="GLOBAL_QUOTE",
-            request_args=[
-                f"symbol={symbol}",
-            ]
-            + ([f"datatype={datatype}"] if datatype != "json" else []),
-        )
-    
-    def get_market_status(
-        self,
-        **kwargs
-    ) -> Optional[dict[str, any]]:
-        return self._send_request(
-            function="MARKET_STATUS",
-            **kwargs
-        ) 
-    
-    def get_top_gainers_losers(
-        self,
-        **kwargs
-    ) -> Optional[dict[str, any]]:
-        return self._send_request(
-            function="TOP_GAINERS_LOSERS",
-            **kwargs
-        ) 
-
-    def get_real_gdp_per_capita(
-        self,
-        datatype: Literal[\"json\", \"csv\"] = \"json\",
-        **kwargs
-    ) -> Optional[dict[str, any]]:
-        return self._send_request(
-            function="REAL_GDP_PER_CAPITA",
-            request_args = []
-            + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs
-        ) 
-    
-    def get_inflation(
-        self,
-        datatype: Literal[\"json\", \"csv\"] = \"json\",
-        **kwargs
-    ) -> Optional[dict[str, any]]:
-        return self._send_request(
-            function="INFLATION",
-            request_args = []
-            + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs
-        ) 
-    
-    def get_retail_sales(
-        self,
-        datatype: Literal[\"json\", \"csv\"] = \"json\",
-        **kwargs
-    ) -> Optional[dict[str, any]]:
-        return self._send_request(
-            function="RETAIL_SALES",
-            request_args = []
-            + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs
-        ) 
-    
-            
-    def get_durables(
-        self,
-        datatype: Literal[\"json\", \"csv\"] = \"json\",
-        **kwargs
-    ) -> Optional[dict[str, any]]:
-        return self._send_request(
-            function="DURABLES",
-            request_args = []
-            + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs
-        ) 
-    
-                    
-    def get_unemployment(
-        self,
-        datatype: Literal[\"json\", \"csv\"] = \"json\",
-        **kwargs
-    ) -> Optional[dict[str, any]]:
-        return self._send_request(
-            function="UNEMPLOYMENT",
-            request_args = []
-            + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs
-        ) 
-    
-                            
-    def get_nonfarm_payroll(
-        self,
-        datatype: Literal[\"json\", \"csv\"] = \"json\",
-        **kwargs
-    ) -> Optional[dict[str, any]]:
-        return self._send_request(
-            function="NONFARM_PAYROLL",
-            request_args = []
-            + ([f"datatype={datatype}"] if datatype != "json" else []),
-            **kwargs
-        ) 
-    """
-
-    num_hardcoded = 9
-    print(f"Generating {len(grouped_dict) + num_hardcoded} api functions.")
-    print("Saving to file.")
-    with open(Path("util").joinpath("av_integration_api.py"), "w") as file:
-        file.write(av_integration_py)
+    sections = soup.find_all("section")
+    section_dict = {}
+    for section in sections:
+        section_title, collection = process_section(section)
+        if section_title == "Digital & Crypto Currencies":
+            del collection[
+                "CURRENCY_EXCHANGE_RATE"
+            ]  # This is duplicated, also appears in FX
+        section_dict[section_title] = collection
 
 
 if __name__ == "__main__":
