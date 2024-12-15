@@ -167,11 +167,11 @@ def print_function(k: str, v: dict[str, any]) -> None:
         f" + {' + '.join(args_opt_request)}" if len(args_opt_request) > 0 else ""
     )
     print(f"""
-return self._send_request(
-    function="{k}",
-    request_args=[{','.join(args_req_request)}]{request_args_optional},
-    **kwargs
-)
+        return self._send_request(
+            function="{k}",
+            request_args=[{','.join(args_req_request)}]{request_args_optional},
+            **kwargs
+        )
     """)
 
 

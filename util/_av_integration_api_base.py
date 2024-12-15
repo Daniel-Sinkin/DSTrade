@@ -2,7 +2,7 @@ import datetime as dt
 import json
 import logging
 import os
-from typing import Literal, Optional
+from typing import Optional
 
 import requests
 from dotenv import load_dotenv
