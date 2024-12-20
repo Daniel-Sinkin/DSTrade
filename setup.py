@@ -9,7 +9,7 @@ setup(
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     url="https://github.com/Daniel-Sinkin/DSTrade",
-    packages=find_packages("src"),
+    packages=find_packages(where="src"),
     package_dir={"": "src"},
     include_package_data=True,
     install_requires=open("requirements.txt").read().splitlines(),
