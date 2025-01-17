@@ -113,7 +113,8 @@ class AlphaVantageAPIHandler:
             filename = (
                 f"{get_utc_timestamp_ms()}" + "__" + "&".join([function] + request_args)
             )
-            with open(f"saved_responses/{filename}.json", "w") as file:
+            os.makedirs("data", exist_ok=True)
+            with open(f"data/alpha_vantage_{filename}.json", "w") as file:
                 json.dump(response_data, file)
 
         if "Information" in response_data:
