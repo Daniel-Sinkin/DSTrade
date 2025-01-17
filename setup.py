@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="DSTrade",
-    version="0.1.3",
+    version="0.2.0",
     author="Daniel Sinkin",
     author_email="danielsinkin97@gmail.com",
     description="Full Alphavantage API python interface",

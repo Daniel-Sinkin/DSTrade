@@ -14,7 +14,7 @@ from .av_util import (
     AV_SYMBOL,
     obfuscate_api_key,
 )
-from .constants import log_fmt
+from .constants import log_date_fmt, log_fmt
 
 handler_logger = logging.Logger("AV_Handler")
 handler_logger.setLevel(logging.DEBUG)
@@ -22,7 +22,7 @@ handler_logger.setLevel(logging.DEBUG)
 stream_handler = logging.StreamHandler()
 stream_handler.setLevel(logging.DEBUG)
 
-formatter = logging.Formatter(log_fmt)
+formatter = logging.Formatter(log_fmt, datefmt=log_date_fmt)
 stream_handler.setFormatter(formatter)
 
 handler_logger.addHandler(stream_handler)

@@ -1,4 +1,5 @@
 log_fmt = "[%(asctime)s] [%(levelname)-7s] [%(name)-11s] --- %(message)s (%(filename)s:%(lineno)s)"
+log_date_fmt = "%Y-%m-%d %H:%M:%S"
 
 OPTIONS_COLUMNS = [
     "date",

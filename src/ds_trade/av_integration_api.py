@@ -8,7 +8,7 @@ from typing import Literal, Optional
 import requests
 from dotenv import load_dotenv
 
-from .constants import log_fmt
+from .constants import log_date_fmt, log_fmt
 
 api_logger = logging.Logger("AV_APIHandler")
 api_logger.setLevel(logging.DEBUG)
@@ -16,7 +16,7 @@ api_logger.setLevel(logging.DEBUG)
 stream_handler = logging.StreamHandler()
 stream_handler.setLevel(logging.DEBUG)
 
-formatter = logging.Formatter(log_fmt)
+formatter = logging.Formatter(log_fmt, datefmt=log_date_fmt)
 stream_handler.setFormatter(formatter)
 
 api_logger.addHandler(stream_handler)
