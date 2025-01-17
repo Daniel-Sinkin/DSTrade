@@ -1,3 +1,5 @@
+log_fmt = "[%(asctime)s] [%(levelname)-7s] [%(name)-11s] --- %(message)s (%(filename)s:%(lineno)s)"
+
 OPTIONS_COLUMNS = [
     "date",
     "expiration",

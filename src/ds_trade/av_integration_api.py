@@ -8,13 +8,15 @@ from typing import Literal, Optional
 import requests
 from dotenv import load_dotenv
 
+from .constants import log_fmt
+
 api_logger = logging.Logger("AV_APIHandler")
 api_logger.setLevel(logging.DEBUG)
 
 stream_handler = logging.StreamHandler()
 stream_handler.setLevel(logging.DEBUG)
 
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+formatter = logging.Formatter(log_fmt)
 stream_handler.setFormatter(formatter)
 
 api_logger.addHandler(stream_handler)

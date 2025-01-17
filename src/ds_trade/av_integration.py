@@ -14,6 +14,7 @@ from .av_util import (
     AV_SYMBOL,
     obfuscate_api_key,
 )
+from .constants import log_fmt
 
 handler_logger = logging.Logger("AV_Handler")
 handler_logger.setLevel(logging.DEBUG)
@@ -21,7 +22,7 @@ handler_logger.setLevel(logging.DEBUG)
 stream_handler = logging.StreamHandler()
 stream_handler.setLevel(logging.DEBUG)
 
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+formatter = logging.Formatter(log_fmt)
 stream_handler.setFormatter(formatter)
 
 handler_logger.addHandler(stream_handler)
