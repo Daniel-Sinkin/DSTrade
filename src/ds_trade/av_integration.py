@@ -28,7 +28,7 @@ handler_logger.addHandler(stream_handler)
 
 
 class AlphaVantageHandler:
-    def __init__(self, api_key: str = "demo"):
+    def __init__(self, api_key: Optional[str] = None):
         self._api = AlphaVantageAPIHandler(api_key=api_key)
         self.logger = handler_logger
         self.logger.debug(f"Created {self}.")

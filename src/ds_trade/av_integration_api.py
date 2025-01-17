@@ -62,7 +62,9 @@ def format_time(seconds: float) -> str:
 
 
 class AlphaVantageAPIHandler:
-    def __init__(self, api_key: str = "demo"):
+    def __init__(self, api_key: Optional[str] = None):
+        if api_key is None:
+            api_key = API_KEY_ALPHAVANTAGE
         self.api_key = api_key
         self.url_base = "https://www.alphavantage.co/"
         self.url_request = self.url_base + "query?"
